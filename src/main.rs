@@ -94,6 +94,10 @@ fn ui_folders(ui: &mut egui::Ui, folders: &Vec<PathBuf>, pages: &mut Vec<FolderC
                 }
                 response.context_menu(|ui|
                     {
+                        if ui.button("Copy path").clicked() {
+                            ui.output_mut(|o| o.copied_text = String::from(path_obj.as_path().to_str().unwrap()));
+                            ui.close_menu();
+                        }
                         if ui.button("Open...").clicked() {
                             ui.close_menu();
                         }
