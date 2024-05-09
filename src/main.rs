@@ -76,6 +76,7 @@ fn ui_folders(ui: &mut egui::Ui, folders: &Vec<PathBuf>, pages: &mut Vec<FolderC
         let scroll_id = egui::Id::new("scroll_area").with(index);
 
         egui::ScrollArea::vertical().id_source(scroll_id).show(ui, |ui| {
+            ui.heading(String::from(folders.first().unwrap().as_path().parent().unwrap().to_str().unwrap().to_string())); // TODO: refactor
             for path_obj in folders {
                 let folder_name = path_obj.file_name().unwrap().to_str().unwrap();
                 let item_icon = if path_obj.is_dir(){"📁"} else {"📄"};
