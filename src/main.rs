@@ -4,8 +4,9 @@ use std::path::PathBuf;
 use std::ptr::copy;
 use std::vec;
 use eframe::{self, egui, Frame};
-use egui::{Context, Button, RichText, Color32, Stroke};
+use egui::{Context, Button, RichText, Color32, Stroke, Label, Sense};
 use std::vec::Vec;
+
 
 fn main() {
     let options = eframe::NativeOptions::default();
@@ -87,9 +88,45 @@ fn ui_folders(ui: &mut egui::Ui, folders: &Vec<PathBuf>, pages: &mut Vec<FolderC
                     item_button = item_button.stroke(Stroke::NONE);
                 }
 
-                if ui.add(item_button).clicked(){
+                let response = ui.add(item_button);
+                if response.clicked(){
                     pages.push(FolderContents::new(utils::get_folders(path_obj.as_path().to_str().unwrap())));
                 }
+                response.context_menu(|ui|
+                    {
+                        if ui.button("Open...").clicked() {
+                            ui.close_menu();
+                        }
+                        ui.menu_button("SubMenu", |ui| {
+                            ui.menu_button("SubMenu", |ui| {
+                                if ui.button("Open...").clicked() {
+                                    ui.close_menu();
+                                }
+                                let _ = ui.button("Item");
+                            });
+                            ui.menu_button("SubMenu", |ui| {
+                                if ui.button("Open...").clicked() {
+                                    ui.close_menu();
+                                }
+                                let _ = ui.button("Item");
+                            });
+                            let _ = ui.button("Item");
+                            if ui.button("Open...").clicked() {
+                                ui.close_menu();
+                            }
+                        });
+                        ui.menu_button("SubMenu", |ui| {
+                            let _ = ui.button("Item1");
+                            let _ = ui.button("Item2");
+                            let _ = ui.button("Item3");
+                            let _ = ui.button("Item4");
+                            if ui.button("Open...").clicked() {
+                                ui.close_menu();
+                            }
+                        });
+                        let _ = ui.button("Very long text for this item");
+                    }
+                );
             }
         });
     });
