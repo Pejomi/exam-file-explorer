@@ -41,7 +41,7 @@ impl MyApp {
     }
 
     fn initialize(&mut self) {
-        self.pages = vec![FolderContents::new(utils::get_folders("C:\\"))];
+        self.pages = vec![FolderContents::new(utils::get_folders("./test-directory"))];
     }
 }
 
