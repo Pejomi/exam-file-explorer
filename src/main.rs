@@ -2,7 +2,6 @@ mod utils;
 mod ui;
 
 use std::path::PathBuf;
-use std::ptr::copy;
 use std::vec;
 use eframe::{self, egui, Frame};
 use egui::{Context, Button, RichText, Color32, Stroke};
