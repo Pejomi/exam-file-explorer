@@ -24,7 +24,6 @@ impl MyApp {
 
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
-
         egui::CentralPanel::default().show(ctx, |ui| {
             StripBuilder::new(ui)
                 .size(Size::exact(20.0))// top
@@ -46,7 +45,6 @@ impl eframe::App for MyApp {
                                 // ui.style_mut().spacing.button_padding = (12.0, 12.0).into();
 
                                 ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-
                                     ui.button("⬅");
                                     ui.button("➡");
                                     ui.button("⬆");
@@ -152,11 +150,46 @@ impl eframe::App for MyApp {
                             .default_width(200.0)
                             .width_range(80.0..=500.0)
                             .show_inside(ui, |ui| {
-                                ui.vertical_centered(|ui| {
-                                    ui.heading("Right Panel");
-                                });
-                                egui::ScrollArea::vertical().show(ui, |ui| {
-                                    ui.label("some text some text some text some text some text some text some text some text some text some text \nsome textsome textsome textsome textsome textsome textsome textsome textsome text\nsome textsome text");
+                                ui.vertical(|ui| {
+                                    egui::ScrollArea::vertical().show(ui, |ui| {
+                                    ui.heading("File name"); //todo: insert clicked file name here
+                                    StripBuilder::new(ui)
+                                        .size(Size::exact(20.0))
+                                        .vertical(|mut strip| {
+                                            strip.strip(|builder| {
+                                                builder.sizes(Size::remainder(), 2).horizontal(|mut strip| {
+                                                    strip.cell(|ui| {
+                                                        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                                                            ui.label("Type");
+                                                        });
+                                                        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                                                            ui.label("Size");
+                                                        });
+                                                        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                                                            ui.label("File location");
+                                                        });
+                                                        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                                                            ui.label("Date modified");
+                                                        });
+                                                    });
+                                                    strip.cell(|ui| {
+                                                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                                                           ui.label("Some text")
+                                                        });
+                                                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                                                            ui.label("Some text")
+                                                        });
+                                                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                                                            ui.label("Some text")
+                                                        });
+                                                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                                                            ui.label("Some text")
+                                                        });
+                                                    });
+                                                });
+                                            });
+                                        });
+                                    });
                                 });
                             });
                     });
