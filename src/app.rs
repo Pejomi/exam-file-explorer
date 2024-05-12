@@ -117,24 +117,51 @@ impl eframe::App for MyApp {
                                     ui.label("some text some text some text some text some text some text some text some text some text some text \nsome textsome textsome textsome textsome textsome textsome textsome textsome text\nsome textsome text");
                                 });
                             });
-                        egui::SidePanel::right("right_panel")
-                            .resizable(true)
-                            .default_width(200.0)
-                            .width_range(80.0..=500.0)
-                            .show_inside(ui, |ui| {
-                                ui.vertical_centered(|ui| {
-                                    ui.heading("Right Panel");
-                                });
-                                egui::ScrollArea::vertical().show(ui, |ui| {
-                                    ui.label("some text some text some text some text some text some text some text some text some text some text \nsome textsome textsome textsome textsome textsome textsome textsome textsome text\nsome textsome text");
-                                });
-                            });
+
                         egui::CentralPanel::default().show_inside(ui, |ui| {
-                            ui.vertical_centered(|ui| {
-                                ui.heading("Central Panel");
-                            });
+                            // ui.vertical_centered(|ui| {
+                            //     ui.heading("Central Panel");
+                            // });
+
                             egui::ScrollArea::vertical().show(ui, |ui| {
-                                ui.label("some text some text some text some text some text some text some text some text some text some text \nsome textsome textsome textsome textsome textsome textsome textsome textsome text\nsome textsome text");
+                                // ui.set_max_width(ui.ctx().screen_rect().width());
+                                    TableBuilder::new(ui)
+                                        //.striped(true)
+                                        .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
+                                        .column(Column::remainder().resizable(true))
+                                        .column(Column::remainder().resizable(true))
+                                        .column(Column::remainder().resizable(true))
+                                        .column(Column::remainder().resizable(true))
+                                        .header(20.0, |mut header| {
+                                            header.col(|ui| {
+                                                ui.label("Name");
+                                            });
+                                            header.col(|ui| {
+                                                ui.label("Date modified");
+                                            });
+                                            header.col(|ui| {
+                                                ui.label("Type");
+                                            });
+                                            header.col(|ui| {
+                                                ui.label("Size");
+                                            });
+                                        })
+                                        .body(|mut body| {
+                                            body.row(30.0, |mut row| {
+                                                row.col(|ui| {
+                                                    ui.label("Hello");
+                                                });
+                                                row.col(|ui| {
+                                                    ui.label("Hello");
+                                                });
+                                                row.col(|ui| {
+                                                    ui.label("Hello");
+                                                });
+                                                row.col(|ui| {
+                                                    ui.button("world!");
+                                                });
+                                            });
+                                        });
                             });
                         });
                         //directory list
@@ -149,6 +176,18 @@ impl eframe::App for MyApp {
                         //         }
                         //     });
                         // });
+                        egui::SidePanel::right("right_panel")
+                            .resizable(true)
+                            .default_width(200.0)
+                            .width_range(80.0..=500.0)
+                            .show_inside(ui, |ui| {
+                                ui.vertical_centered(|ui| {
+                                    ui.heading("Right Panel");
+                                });
+                                egui::ScrollArea::vertical().show(ui, |ui| {
+                                    ui.label("some text some text some text some text some text some text some text some text some text some text \nsome textsome textsome textsome textsome textsome textsome textsome textsome text\nsome textsome text");
+                                });
+                            });
                     });
                     // bottom
                     strip.strip(|builder| {
