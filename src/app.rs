@@ -1,5 +1,5 @@
 use eframe::Frame;
-use egui::{Color32, Context};
+use egui::{Button, Color32, Context, Visuals};
 use crate::{FolderContents, ui_folders, utils};
 use egui_extras::{TableBuilder, Column};
 use egui_extras::{Size, StripBuilder};
@@ -24,6 +24,7 @@ impl MyApp {
 
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
+
         egui::CentralPanel::default().show(ctx, |ui| {
             // let table = TableBuilder::new(ui)
             //     .striped(true)
@@ -50,8 +51,8 @@ impl eframe::App for MyApp {
             //     });
 
             StripBuilder::new(ui)
-                .size(Size::exact(40.0))// top
-                .size(Size::exact(40.0))// settings
+                .size(Size::exact(20.0))// top
+                // .size(Size::exact(20.0))// settings
                 .size(Size::remainder().at_least(70.0)) // body
                 .size(Size::exact(20.0)) // bottom
                 .vertical(|mut strip| {
@@ -59,46 +60,56 @@ impl eframe::App for MyApp {
                     strip.strip(|builder| {
                         builder.size(Size::remainder()).horizontal(|mut strip| {
                             strip.cell(|ui| {
-                                ui.ctx().debug_painter().debug_rect(
-                                    ui.max_rect(),
-                                    Color32::YELLOW,
-                                    "Top",
-                                );
+                                // ui.ctx().debug_painter().debug_rect(
+                                //     ui.max_rect(),
+                                //     Color32::YELLOW,
+                                //     "Top",
+                                // );
+
+                                // ctx.set_pixels_per_point(1.5);
+                                // ui.style_mut().spacing.button_padding = (12.0, 12.0).into();
+
                                 ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                    ui.label("Top Left");
-                                    ui.label("Top Right");
+
+                                    ui.button("⬅");
+                                    ui.button("➡");
+                                    ui.button("⬆");
+                                    ui.button("⟳");
                                 });
                             });
                         });
                     });
                     // settings
-                    strip.strip(|builder| {
-                        builder.size(Size::remainder()).horizontal(|mut strip| {
-                            strip.cell(|ui| {
-                                ui.ctx().debug_painter().debug_rect(
-                                    ui.max_rect(),
-                                    Color32::RED,
-                                    "Settings",
-                                );
-                                ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                    ui.label("Top Left");
-                                    ui.label("Top Right");
-                                });
-                            });
-                        });
-                    });
+                    // strip.strip(|builder| {
+                    //     builder.size(Size::remainder()).horizontal(|mut strip| {
+                    //         strip.cell(|ui| {
+                    //             ui.ctx().debug_painter().debug_rect(
+                    //                 ui.max_rect(),
+                    //                 Color32::RED,
+                    //                 "Settings",
+                    //             );
+                    //             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                    //                 ui.button("🗑");
+                    //
+                    //             });
+                    //         });
+                    //     });
+                    // });
+
+
                     // body
                     strip.cell(|ui| {
-                        ui.ctx().debug_painter().debug_rect(
-                            ui.max_rect(),
-                            Color32::BLUE,
-                            "Body"
-                        );
+                        // ui.ctx().debug_painter().debug_rect(
+                        //     ui.max_rect(),
+                        //     Color32::BLUE,
+                        //     "Body"
+                        // );
                         egui::SidePanel::left("left_panel")
                             .resizable(true)
                             .default_width(200.0)
                             .width_range(80.0..=500.0)
                             .show_inside(ui, |ui| {
+
                                 ui.vertical_centered(|ui| {
                                     ui.heading("Left Panel");
                                 });
@@ -141,18 +152,35 @@ impl eframe::App for MyApp {
                     });
                     // bottom
                     strip.strip(|builder| {
-                        builder.size(Size::remainder()).horizontal(|mut strip| {
+                        builder.sizes(Size::remainder(), 2).horizontal(|mut strip| {
                             strip.cell(|ui| {
-                                ui.ctx().debug_painter().debug_rect(
-                                    ui.max_rect(),
-                                    Color32::GREEN,
-                                    "Bottom",
-                                );
+                                // ui.ctx().debug_painter().debug_rect(
+                                //     ui.max_rect(),
+                                //     Color32::GREEN,
+                                //     "Bottom Left",
+                                // );
                                 ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                                     ui.label("X items");
                                     ui.label("|");
                                     ui.label("X items selected");
                                     ui.label("|");
+                                });
+                            });
+                            strip.cell(|ui| {
+                                // ui.ctx().debug_painter().debug_rect(
+                                //     ui.max_rect(),
+                                //     Color32::GREEN,
+                                //     "Bottom Right",
+                                // );
+                                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                                    if ui.button("☀/🌙").clicked() {
+                                        let visuals = if ui.visuals().dark_mode {
+                                            Visuals::light()
+                                        } else {
+                                            Visuals::dark()
+                                        };
+                                        ctx.set_visuals(visuals);
+                                    }
                                 });
                             });
                         });
