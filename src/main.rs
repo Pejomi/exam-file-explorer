@@ -1,4 +1,5 @@
 mod utils;
+mod app;
 
 use std::path::PathBuf;
 use std::ptr::copy;
@@ -6,10 +7,11 @@ use std::vec;
 use eframe::{self, egui, Frame};
 use egui::{Context, Button, RichText, Color32, Stroke, Label, Sense};
 use std::vec::Vec;
-
+use crate::app::MyApp;
 
 fn main() {
     let options = eframe::NativeOptions::default();
+
     let _ = eframe::run_native(
         "Superior File Explorer - PeJoMi",
         options,
@@ -27,45 +29,45 @@ impl FolderContents {
     }
 }
 
-#[derive(Default)]
-struct MyApp {
-    pages: Vec<FolderContents>
-}
-
-impl MyApp {
-    fn new() -> Self {
-        let mut app = MyApp {
-            pages: Vec::new()
-        };
-        app.initialize();
-        app
-    }
-
-    fn initialize(&mut self) {
-        self.pages = vec![FolderContents::new(utils::get_folders("C:\\"))];
-    }
-}
-
-impl eframe::App for MyApp {
-    fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
-        egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("C:\\");
-
-            let pages_clone = self.pages.clone();
-            let mut counter = 1;
-            let screen_size = ctx.available_rect();
-
-            egui::ScrollArea::horizontal().show(ui, |ui| {
-                ui.horizontal(|ui| {
-                    for page in pages_clone {
-                        ui_folders(ui, &page.items, &mut self.pages, &counter, &screen_size.height());
-                        counter += 1;
-                    }
-                });
-            });
-        });
-    }
-}
+// #[derive(Default)]
+// struct MyApp {
+//     pages: Vec<FolderContents>
+// }
+//
+// impl MyApp {
+//     fn new() -> Self {
+//         let mut app = MyApp {
+//             pages: Vec::new()
+//         };
+//         app.initialize();
+//         app
+//     }
+//
+//     fn initialize(&mut self) {
+//         self.pages = vec![FolderContents::new(utils::get_folders("C:\\"))];
+//     }
+// }
+//
+// impl eframe::App for MyApp {
+//     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
+//         egui::CentralPanel::default().show(ctx, |ui| {
+//             ui.heading("C:\\");
+//
+//             let pages_clone = self.pages.clone();
+//             let mut counter = 1;
+//             let screen_size = ctx.available_rect();
+//
+//             egui::ScrollArea::horizontal().show(ui, |ui| {
+//                 ui.horizontal(|ui| {
+//                     for page in pages_clone {
+//                         ui_folders(ui, &page.items, &mut self.pages, &counter, &screen_size.height());
+//                         counter += 1;
+//                     }
+//                 });
+//             });
+//         });
+//     }
+// }
 
 fn ui_folders(ui: &mut egui::Ui, folders: &Vec<PathBuf>, pages: &mut Vec<FolderContents>, index: &i32, screen_height: &f32) {
     ui.vertical(|ui| {
