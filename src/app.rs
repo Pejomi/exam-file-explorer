@@ -26,30 +26,6 @@ impl eframe::App for MyApp {
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            // let table = TableBuilder::new(ui)
-            //     .striped(true)
-            //     .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
-            //     .column(Column::auto().resizable(true))
-            //     .column(Column::auto())
-            //     .header(20.0, |mut header| {
-            //         header.col(|ui| {
-            //             ui.heading("First column");
-            //         });
-            //         header.col(|ui| {
-            //             ui.heading("Second column");
-            //         });
-            //     })
-            //     .body(|mut body| {
-            //         body.row(30.0, |mut row| {
-            //             row.col(|ui| {
-            //                 ui.label("Hello");
-            //             });
-            //             row.col(|ui| {
-            //                 ui.button("world!");
-            //             });
-            //         });
-            //     });
-
             StripBuilder::new(ui)
                 .size(Size::exact(20.0))// top
                 // .size(Size::exact(20.0))// settings
@@ -119,12 +95,7 @@ impl eframe::App for MyApp {
                             });
 
                         egui::CentralPanel::default().show_inside(ui, |ui| {
-                            // ui.vertical_centered(|ui| {
-                            //     ui.heading("Central Panel");
-                            // });
-
                             egui::ScrollArea::vertical().show(ui, |ui| {
-                                // ui.set_max_width(ui.ctx().screen_rect().width());
                                     TableBuilder::new(ui)
                                         //.striped(true)
                                         .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
@@ -225,10 +196,7 @@ impl eframe::App for MyApp {
                         });
                     });
                 });
-            // ui.horizontal(|ui| {
-            //     table
-            // });
         });
     }
 }
-//todo: make a run appæ
+//todo: make a run app method
