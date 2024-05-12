@@ -1,6 +1,8 @@
 use super::*;
 
-pub fn update_ui(ctx: &Context, app: &mut MyApp) {
+use app::FolderContents;
+
+pub fn update_ui(ctx: &Context, app: &mut App) {
     egui::TopBottomPanel::top("top_panel")
         .show(ctx, |ui| {
             ui.horizontal(|ui| {
