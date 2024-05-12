@@ -6,13 +6,17 @@ pub fn update_ui(ctx: &Context, app: &mut App) {
     egui::TopBottomPanel::top("top_panel")
         .show(ctx, |ui| {
             ui.horizontal(|ui| {
-                ui.label("Search:");
                 ui.add(egui::TextEdit::singleline(&mut app.search_query).desired_width(100.0));
+                if ui.button("Search").clicked() {
+                    // Trigger search action here
+                    //search_by_name(&app.root_path, &app.search_query);
+                    println!("Search query: {}", app.search_query)
+                }
             });
         });
 
     egui::CentralPanel::default().show(ctx, |ui| {
-        ui.heading("C:\\");
+        ui.heading(app.root_path.clone());
 
         let pages_clone = app.pages.clone();
         let mut counter = 1;
@@ -49,10 +53,21 @@ fn ui_folders(ui: &mut egui::Ui, folders: &Vec<PathBuf>, pages: &mut Vec<FolderC
                     item_button = item_button.stroke(Stroke::NONE);
                 }
 
+
+
                 if ui.add(item_button).clicked() {
                     pages.push(FolderContents::new(utils::get_folders(path_obj.as_path().to_str().unwrap())));
                 }
             }
         });
     });
+}
+
+fn search_by_name(root_path: &str, query: &str) {
+    for entry in WalkDir::new(root_path).into_iter().filter_map(|e| e.ok()) {
+        let name = entry.file_name().to_string_lossy();
+        if name.contains(query) {
+            println!("{}", entry.path().display());
+        }
+    }
 }

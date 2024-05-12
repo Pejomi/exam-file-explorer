@@ -15,20 +15,23 @@ impl FolderContents {
 pub struct App {
     pub pages: Vec<FolderContents>,
     pub search_query: String,
+    pub root_path: String,
 }
 
 impl App {
     pub fn new() -> Self {
+        let root_path = String::from("C:\\");
         let mut app = App {
             pages: Vec::new(),
             search_query: String::new(),
+            root_path: root_path.clone(),
         };
-        app.initialize();
+        app.initialize(&root_path);
         app
     }
 
-    fn initialize(&mut self) {
-        self.pages = vec![FolderContents::new(utils::get_folders("C:\\"))];
+    fn initialize(&mut self, root_path: &str) {
+        self.pages = vec![FolderContents::new(utils::get_folders(root_path))];
     }
 }
 
