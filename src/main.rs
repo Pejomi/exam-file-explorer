@@ -1,11 +1,8 @@
 mod utils;
 mod ui;
+mod imports;
 
-use std::path::PathBuf;
-use std::vec;
-use eframe::{self, egui, Frame};
-use egui::{Context, Button, RichText, Color32, Stroke};
-use std::vec::Vec;
+use imports::*;
 
 fn main() {
     let options = eframe::NativeOptions::default();

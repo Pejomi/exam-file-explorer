@@ -1,5 +1,4 @@
-use std::fs;
-use std::path::PathBuf;
+use super::*;
 
 pub fn get_folders(root_path: &str) -> Vec<PathBuf> {
     let mut folder_vec = Vec::new();
