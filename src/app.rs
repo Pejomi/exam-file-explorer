@@ -1,18 +1,21 @@
+use std::path::PathBuf;
 use eframe::Frame;
-use egui::{Button, CollapsingHeader, Color32, Context, TextEdit, Visuals};
-use crate::{FolderContents, ui_folders, utils};
+use egui::{Button, CollapsingHeader, Color32, Context, RichText, TextEdit, Visuals};
+use crate::{ui_folders, utils};
 use egui_extras::{TableBuilder, Column};
 use egui_extras::{Size, StripBuilder};
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub(crate) struct MyApp {
-    pages: Vec<FolderContents>,
+    pages: PathBuf,
+    start_dir: String,
     search_query: String
 }
 
 impl MyApp {
     pub(crate) fn new() -> Self {
         let mut app = MyApp {
-            pages: Vec::new(),
+            pages: PathBuf::new(),
+            start_dir: String::from("test-directory"),
             search_query: String::new()
         };
         app.initialize();
@@ -20,7 +23,10 @@ impl MyApp {
     }
 
     fn initialize(&mut self) {
-        self.pages = vec![FolderContents::new(utils::get_folders("C:\\"))];
+        self.pages = PathBuf::from(&self.start_dir);
+    }
+    pub(crate) fn add_page(&mut self, folder_name: &str){
+        self.pages.push(folder_name);
     }
 }
 
@@ -143,13 +149,20 @@ impl eframe::App for MyApp {
                                 //         });
                                 //     });
                                 //directory list
-                                let pages_clone = self.pages.clone();
-                                let mut counter = 1;
-                                let screen_size = ui.max_rect();
+                                ui.heading(RichText::new(utils::get_clean_abs_path(self.pages.to_str().unwrap()).to_str().unwrap()).size(13.0));
+
+                                let self_clone = self.clone();
+                                let mut counter = 0;
+                                let screen_size = ctx.available_rect();
+                                let mut path = PathBuf::new();
+
                                 egui::ScrollArea::horizontal().show(ui, |ui| {
                                     ui.horizontal(|ui| {
-                                        for page in pages_clone {
-                                            ui_folders(ui, &page.items, &mut self.pages, &counter, &screen_size.height());
+                                        for page in self_clone.pages.components() {
+                                            let curr_folder_name = page.as_os_str().to_str().unwrap();
+                                            path.push(curr_folder_name);
+
+                                            ui_folders(ui, self, &counter, path.to_str().unwrap(), &screen_size.height());
                                             counter += 1;
                                         }
                                     });
