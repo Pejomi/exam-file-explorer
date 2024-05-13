@@ -5,7 +5,7 @@ use std::path::{Component, Components, PathBuf};
 use std::{fs, vec};
 use fs::canonicalize;
 use eframe::{self, egui, Frame};
-use egui::{Context, Button, RichText, Color32, Stroke, Label, Sense, PointerButton};
+use egui::{Context, Button, RichText, Color32, Stroke, Label, Sense, PointerButton, Visuals};
 use std::vec::Vec;
 use crate::app::MyApp;
 use egui::Shape::Path;
@@ -45,10 +45,19 @@ fn ui_folders(ui: &mut egui::Ui, _self: &mut MyApp, index: &i32, curr_path: &str
                     item_button = item_button.fill(Color32::TRANSPARENT);
                     item_button = item_button.stroke(Stroke::NONE);
                 }
-
+                else if _self.pages.to_str().unwrap().contains(path_obj.to_str().unwrap()) {
+                    let selected_bg: Color32 = if ui.visuals().dark_mode {
+                        Color32::from_rgb(59, 40, 204)
+                    }
+                    else {
+                        Color32::from_rgb(135, 191, 255)
+                    };
+                    item_button = item_button.fill(selected_bg);
+                }
                 /* let response = ui.add(item_button);
                 if response.clicked(){
                     pages.push(FolderContents::new(utils::get_folders(path_obj.as_path().to_str().unwrap()))); */
+
                 if ui.add(item_button).clicked(){
                     _self.add_page(folder_name);
                 }

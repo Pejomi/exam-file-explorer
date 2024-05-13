@@ -6,7 +6,7 @@ use egui_extras::{TableBuilder, Column};
 use egui_extras::{Size, StripBuilder};
 #[derive(Default, Clone)]
 pub(crate) struct MyApp {
-    pages: PathBuf,
+    pub(crate) pages: PathBuf,
     start_dir: String,
     search_query: String
 }
