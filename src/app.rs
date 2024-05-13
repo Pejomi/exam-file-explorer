@@ -1,5 +1,5 @@
 use eframe::Frame;
-use egui::{Button, Color32, Context, Visuals};
+use egui::{Button, CollapsingHeader, Color32, Context, TextEdit, Visuals};
 use crate::{FolderContents, ui_folders, utils};
 use egui_extras::{TableBuilder, Column};
 use egui_extras::{Size, StripBuilder};
@@ -35,20 +35,13 @@ impl eframe::App for MyApp {
                     strip.strip(|builder| {
                         builder.size(Size::remainder()).horizontal(|mut strip| {
                             strip.cell(|ui| {
-                                // ui.ctx().debug_painter().debug_rect(
-                                //     ui.max_rect(),
-                                //     Color32::YELLOW,
-                                //     "Top",
-                                // );
-
-                                // ctx.set_pixels_per_point(1.5);
-                                // ui.style_mut().spacing.button_padding = (12.0, 12.0).into();
-
                                 ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                                     ui.button("⬅");
                                     ui.button("➡");
                                     ui.button("⬆");
                                     ui.button("⟳");
+                                    // todo: show current path (input field)
+                                    // todo: add search (input field)
                                 });
                             });
                         });
@@ -73,64 +66,74 @@ impl eframe::App for MyApp {
 
                     // body
                     strip.cell(|ui| {
-                        // ui.ctx().debug_painter().debug_rect(
-                        //     ui.max_rect(),
-                        //     Color32::BLUE,
-                        //     "Body"
-                        // );
                         egui::SidePanel::left("left_panel")
                             .resizable(true)
-                            .default_width(200.0)
-                            .width_range(80.0..=500.0)
+                            .default_width(100.0)
+                            .width_range(100.0..=500.0)
                             .show_inside(ui, |ui| {
-
-                                ui.vertical_centered(|ui| {
-                                    ui.heading("Left Panel");
-                                });
+                                ui.vertical(|ui| {
                                 egui::ScrollArea::vertical().show(ui, |ui| {
-                                    ui.label("some text some text some text some text some text some text some text some text some text some text \nsome textsome textsome textsome textsome textsome textsome textsome textsome text\nsome textsome text");
+                                    // directory tree // todo: replace dummy text
+                                    CollapsingHeader::new("Home")
+                                        .id_source("1")
+                                        .default_open(false)
+                                        .show(ui, |ui| {
+                                            ui.label("hello hello hello hello hello hello");
+                                            ui.label("hello");
+                                            CollapsingHeader::new("Home")
+                                                .default_open(false)
+                                                .show(ui, |ui| {
+                                                    ui.label("hello");
+                                                    ui.label("hello");
+                                                    ui.label("hello")
+                                                })
+                                                .body_returned;
+                                        })
+                                        .body_returned;
+                                    });
                                 });
                             });
 
                         egui::CentralPanel::default().show_inside(ui, |ui| {
                             egui::ScrollArea::vertical().show(ui, |ui| {
-                                    TableBuilder::new(ui)
-                                        //.striped(true)
-                                        .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
-                                        .column(Column::remainder().resizable(true))
-                                        .column(Column::remainder().resizable(true))
-                                        .column(Column::remainder().resizable(true))
-                                        .column(Column::remainder().resizable(true))
-                                        .header(20.0, |mut header| {
-                                            header.col(|ui| {
-                                                ui.label("Name");
+                                // table display list
+                                TableBuilder::new(ui)
+                                    //.striped(true)
+                                    .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
+                                    .column(Column::remainder().resizable(true))
+                                    .column(Column::remainder().resizable(true))
+                                    .column(Column::remainder().resizable(true))
+                                    .column(Column::remainder().resizable(true))
+                                    .header(20.0, |mut header| {
+                                        header.col(|ui| {
+                                            ui.label("Name");
+                                        });
+                                        header.col(|ui| {
+                                            ui.label("Date modified");
+                                        });
+                                        header.col(|ui| {
+                                            ui.label("Type");
+                                        });
+                                        header.col(|ui| {
+                                            ui.label("Size");
+                                        });
+                                    })
+                                    .body(|mut body| { // todo: loop and display files from current path
+                                        body.row(30.0, |mut row| {
+                                            row.col(|ui| {
+                                                ui.label("Hello");
                                             });
-                                            header.col(|ui| {
-                                                ui.label("Date modified");
+                                            row.col(|ui| {
+                                                ui.label("Hello");
                                             });
-                                            header.col(|ui| {
-                                                ui.label("Type");
+                                            row.col(|ui| {
+                                                ui.label("Hello");
                                             });
-                                            header.col(|ui| {
-                                                ui.label("Size");
-                                            });
-                                        })
-                                        .body(|mut body| {
-                                            body.row(30.0, |mut row| {
-                                                row.col(|ui| {
-                                                    ui.label("Hello");
-                                                });
-                                                row.col(|ui| {
-                                                    ui.label("Hello");
-                                                });
-                                                row.col(|ui| {
-                                                    ui.label("Hello");
-                                                });
-                                                row.col(|ui| {
-                                                    ui.button("world!");
-                                                });
+                                            row.col(|ui| {
+                                                ui.button("world!");
                                             });
                                         });
+                                    });
                             });
                         });
                         //directory list
@@ -148,47 +151,48 @@ impl eframe::App for MyApp {
                         egui::SidePanel::right("right_panel")
                             .resizable(true)
                             .default_width(200.0)
-                            .width_range(80.0..=500.0)
+                            .width_range(200.0..=500.0)
                             .show_inside(ui, |ui| {
                                 ui.vertical(|ui| {
                                     egui::ScrollArea::vertical().show(ui, |ui| {
-                                    ui.heading("File name"); //todo: insert clicked file name here
-                                    StripBuilder::new(ui)
-                                        .size(Size::exact(20.0))
-                                        .vertical(|mut strip| {
-                                            strip.strip(|builder| {
-                                                builder.sizes(Size::remainder(), 2).horizontal(|mut strip| {
-                                                    strip.cell(|ui| {
-                                                        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                                            ui.label("Type");
+                                        // description of a clicked file
+                                        ui.heading("File name"); //todo: insert clicked file name here
+                                        StripBuilder::new(ui)
+                                            .size(Size::exact(20.0))
+                                            .vertical(|mut strip| {
+                                                strip.strip(|builder| {
+                                                    builder.sizes(Size::remainder(), 2).horizontal(|mut strip| {
+                                                        strip.cell(|ui| {
+                                                            ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                                                                ui.label("Type");
+                                                            });
+                                                            ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                                                                ui.label("Size");
+                                                            });
+                                                            ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                                                                ui.label("File location");
+                                                            });
+                                                            ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                                                                ui.label("Date modified");
+                                                            });
                                                         });
-                                                        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                                            ui.label("Size");
-                                                        });
-                                                        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                                            ui.label("File location");
-                                                        });
-                                                        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                                            ui.label("Date modified");
-                                                        });
-                                                    });
-                                                    strip.cell(|ui| {
-                                                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                                           ui.label("Some text")
-                                                        });
-                                                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                                            ui.label("Some text")
-                                                        });
-                                                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                                            ui.label("Some text")
-                                                        });
-                                                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                                            ui.label("Some text")
+                                                        strip.cell(|ui| {
+                                                            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                                                                ui.label("Some text") // todo: replace dummy text
+                                                            });
+                                                            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                                                                ui.label("Some text") // todo: replace dummy text
+                                                            });
+                                                            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                                                                ui.label("Some text") // todo: replace dummy text
+                                                            });
+                                                            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                                                                ui.label("Some text") // todo: replace dummy text
+                                                            });
                                                         });
                                                     });
                                                 });
                                             });
-                                        });
                                     });
                                 });
                             });
@@ -196,25 +200,18 @@ impl eframe::App for MyApp {
                     // bottom
                     strip.strip(|builder| {
                         builder.sizes(Size::remainder(), 2).horizontal(|mut strip| {
+                            // items and selected items description
                             strip.cell(|ui| {
-                                // ui.ctx().debug_painter().debug_rect(
-                                //     ui.max_rect(),
-                                //     Color32::GREEN,
-                                //     "Bottom Left",
-                                // );
                                 ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                    ui.label("X items");
+                                    ui.label("X items"); // todo: replace X
                                     ui.label("|");
-                                    ui.label("X items selected");
+                                    ui.label("X items selected"); // todo: replace X
                                     ui.label("|");
                                 });
                             });
+
+                            // light/dark mode settings
                             strip.cell(|ui| {
-                                // ui.ctx().debug_painter().debug_rect(
-                                //     ui.max_rect(),
-                                //     Color32::GREEN,
-                                //     "Bottom Right",
-                                // );
                                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                                     if ui.button("☀/🌙").clicked() {
                                         let visuals = if ui.visuals().dark_mode {
