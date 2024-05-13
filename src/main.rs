@@ -1,11 +1,12 @@
 mod utils;
 
-use std::path::PathBuf;
-use std::ptr::copy;
-use std::vec;
+use std::path::{Component, Components, PathBuf};
+use std::{fs, vec};
+use fs::canonicalize;
 use eframe::{self, egui, Frame};
-use egui::{Context, Button, RichText, Color32, Stroke};
+use egui::{Context, Button, RichText, Color32, Stroke, PointerButton};
 use std::vec::Vec;
+use egui::Shape::Path;
 
 fn main() {
     let options = eframe::NativeOptions::default();
@@ -15,49 +16,49 @@ fn main() {
         Box::new(|_cc| Box::new(MyApp::new())));
 }
 
-#[derive(Clone)]
-struct FolderContents {
-    items: Vec<PathBuf>
-}
-
-impl FolderContents {
-    fn new(items: Vec<PathBuf>) -> Self {
-        FolderContents { items }
-    }
-}
-
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct MyApp {
-    pages: Vec<FolderContents>
+    pages: PathBuf,
+    start_dir: String
 }
 
 impl MyApp {
     fn new() -> Self {
         let mut app = MyApp {
-            pages: Vec::new()
+            pages: PathBuf::new(),
+            start_dir: String::from("test-directory")
         };
         app.initialize();
         app
     }
 
     fn initialize(&mut self) {
-        self.pages = vec![FolderContents::new(utils::get_folders("./test-directory"))];
+        self.pages = PathBuf::from(&self.start_dir);
+    }
+
+    fn add_page(&mut self, folder_name: &str){
+        self.pages.push(folder_name);
     }
 }
 
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("C:\\");
 
-            let pages_clone = self.pages.clone();
-            let mut counter = 1;
+            ui.heading(RichText::new(utils::get_clean_abs_path(self.pages.to_str().unwrap()).to_str().unwrap()).size(13.0));
+
+            let self_clone = self.clone();
+            let mut counter = 0;
             let screen_size = ctx.available_rect();
+            let mut path = PathBuf::new();
 
             egui::ScrollArea::horizontal().show(ui, |ui| {
                 ui.horizontal(|ui| {
-                    for page in pages_clone {
-                        ui_folders(ui, &page.items, &mut self.pages, &counter, &screen_size.height());
+                    for page in self_clone.pages.components() {
+                        let curr_folder_name = page.as_os_str().to_str().unwrap();
+                        path.push(curr_folder_name);
+
+                        ui_folders(ui, self, &counter, path.to_str().unwrap(), &screen_size.height());
                         counter += 1;
                     }
                 });
@@ -66,7 +67,7 @@ impl eframe::App for MyApp {
     }
 }
 
-fn ui_folders(ui: &mut egui::Ui, folders: &Vec<PathBuf>, pages: &mut Vec<FolderContents>, index: &i32, screen_height: &f32) {
+fn ui_folders(ui: &mut egui::Ui, _self: &mut MyApp, index: &i32, curr_path: &str, screen_height: &f32) {
     ui.vertical(|ui| {
 
         ui.set_max_height(*screen_height);
@@ -75,7 +76,11 @@ fn ui_folders(ui: &mut egui::Ui, folders: &Vec<PathBuf>, pages: &mut Vec<FolderC
         let scroll_id = egui::Id::new("scroll_area").with(index);
 
         egui::ScrollArea::vertical().id_source(scroll_id).show(ui, |ui| {
-            for path_obj in folders {
+            if ui.button("Add txt file test").clicked(){
+                utils::create_file(curr_path, "text-test", "txt").expect("File creation expected");
+            }
+
+            for path_obj in utils::get_folders(curr_path) {
                 let folder_name = path_obj.file_name().unwrap().to_str().unwrap();
                 let item_icon = if path_obj.is_dir(){"📁"} else {"📄"};
 
@@ -88,7 +93,7 @@ fn ui_folders(ui: &mut egui::Ui, folders: &Vec<PathBuf>, pages: &mut Vec<FolderC
                 }
 
                 if ui.add(item_button).clicked(){
-                    pages.push(FolderContents::new(utils::get_folders(path_obj.as_path().to_str().unwrap())));
+                    _self.add_page(folder_name);
                 }
             }
         });
