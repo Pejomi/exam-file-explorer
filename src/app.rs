@@ -44,10 +44,9 @@ impl eframe::App for MyApp {
                         builder.size(Size::remainder()).horizontal(|mut strip| {
                             strip.cell(|ui| {
                                 ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                    ui.button("⬅");
-                                    ui.button("➡");
-                                    ui.button("⬆");
-                                    ui.button("⟳");
+                                    if ui.button("⬅").clicked() {
+                                        self.pages.pop();
+                                    }
                                     // todo: show current path (input field)
                                     // todo: add search (input field)
                                     ui.add(egui::TextEdit::singleline(&mut self.search_query).desired_width(100.0));
