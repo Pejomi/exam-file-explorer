@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 use eframe::Frame;
-use egui::{Button, CollapsingHeader, Color32, Context, RichText, TextEdit, Visuals};
+use egui::{Context, Label, Sense, Visuals};
+
 use crate::{ui_folders, utils};
-use egui_extras::{TableBuilder, Column};
 use egui_extras::{Size, StripBuilder};
 #[derive(Default, Clone)]
 pub(crate) struct MyApp {
@@ -41,20 +41,29 @@ impl eframe::App for MyApp {
                 .vertical(|mut strip| {
                     // top
                     strip.strip(|builder| {
-                        builder.size(Size::remainder()).horizontal(|mut strip| {
+                        builder.size(Size::remainder())
+                            .size(Size::relative(0.25).at_least(200.0))
+                            .horizontal(|mut strip| {
                             strip.cell(|ui| {
                                 ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                                     if ui.button("⬅").clicked() {
                                         self.pages.pop();
                                     }
-                                    // todo: show current path (input field)
-                                    // todo: add search (input field)
-                                    ui.add(egui::TextEdit::singleline(&mut self.search_query).desired_width(100.0));
+                                    // show current path and copy by click
+                                    let current_path = utils::get_clean_abs_path(self.pages.to_str().unwrap()).to_str().unwrap();
+                                    if ui.add(Label::new(String::from("🏠 ".to_owned() + current_path)).sense(Sense::click())).on_hover_cursor(egui::CursorIcon::PointingHand).clicked() {
+                                        ui.output_mut(|o| o.copied_text = String::from(current_path));
+                                    }
+                                });
+                            });
+                            strip.cell(|ui| {
+                                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                                     if ui.button("Search").clicked() {
                                         // Trigger search action here
                                         //search_by_name(&app.root_path, &app.search_query);
                                         println!("Search query: {}", self.search_query)
                                     }
+                                    ui.add_sized(ui.available_size(), egui::TextEdit::singleline(&mut self.search_query));
                                 });
                             });
                         });
@@ -106,7 +115,7 @@ impl eframe::App for MyApp {
                         //             });
                         //         });
                         //     });
-
+                        ui.separator();
                         egui::CentralPanel::default().show_inside(ui, |ui| {
                             egui::ScrollArea::vertical().show(ui, |ui| {
                                 // table display list
@@ -148,7 +157,7 @@ impl eframe::App for MyApp {
                                 //         });
                                 //     });
                                 //directory list
-                                ui.heading(RichText::new(utils::get_clean_abs_path(self.pages.to_str().unwrap()).to_str().unwrap()).size(13.0));
+                                // ui.heading(RichText::new(utils::get_clean_abs_path(self.pages.to_str().unwrap()).to_str().unwrap()).size(13.0));
 
                                 let self_clone = self.clone();
                                 let mut counter = 0;
