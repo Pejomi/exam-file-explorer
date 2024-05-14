@@ -233,12 +233,11 @@ impl eframe::App for MyApp {
                     // bottom
                     strip.strip(|builder| {
                         builder.sizes(Size::remainder(), 2).horizontal(|mut strip| {
-                            // items and selected items description
+                            // items count description
                             strip.cell(|ui| {
                                 ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                    ui.label("X items"); // todo: replace X
-                                    ui.label("|");
-                                    ui.label("X items selected"); // todo: replace X
+                                    let items_amount = utils::get_folders(self.pages.as_path().to_str().unwrap()).iter().count();
+                                    ui.label(format!("{} items", items_amount)); // todo: replace X
                                     ui.label("|");
                                 });
                             });
