@@ -2,13 +2,16 @@ use std::path::PathBuf;
 use eframe::Frame;
 use egui::{Context, Label, Sense, Visuals};
 
+use egui::{Button, CollapsingHeader, Color32, Context, RichText, TextEdit, Visuals, Pos2, AboveOrBelow};
+use egui::AboveOrBelow::Above;
 use crate::{ui_folders, utils};
 use egui_extras::{Size, StripBuilder};
 #[derive(Default, Clone)]
 pub(crate) struct MyApp {
     pub(crate) pages: PathBuf,
     start_dir: String,
-    search_query: String
+    search_query: String,
+    pub(crate) context_menu_open: bool
 }
 
 impl MyApp {
@@ -16,7 +19,8 @@ impl MyApp {
         let mut app = MyApp {
             pages: PathBuf::new(),
             start_dir: String::from("test-directory"),
-            search_query: String::new()
+            search_query: String::new(),
+            context_menu_open: false
         };
         app.initialize();
         app
@@ -70,23 +74,6 @@ impl eframe::App for MyApp {
                             });
                         });
                     });
-                    // settings
-                    // strip.strip(|builder| {
-                    //     builder.size(Size::remainder()).horizontal(|mut strip| {
-                    //         strip.cell(|ui| {
-                    //             ui.ctx().debug_painter().debug_rect(
-                    //                 ui.max_rect(),
-                    //                 Color32::RED,
-                    //                 "Settings",
-                    //             );
-                    //             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                    //                 ui.button("🗑");
-                    //
-                    //             });
-                    //         });
-                    //     });
-                    // });
-
 
                     // body
                     strip.cell(|ui| {
@@ -160,37 +147,44 @@ impl eframe::App for MyApp {
                                 //     });
                                 //directory list
                                 // ui.heading(RichText::new(utils::get_clean_abs_path(self.pages.to_str().unwrap()).to_str().unwrap()).size(13.0));
+                        egui::CentralPanel::default().show_inside(ui, |ui| {
+                            let rel_path = self.pages.to_str().unwrap();
 
-                                let self_clone = self.clone();
-                                let mut counter = 0;
-                                let screen_size = ctx.available_rect();
-                                let mut path = PathBuf::new();
+                            // Horizontal area for the heading
+                            ui.horizontal(|ui| {
+                                ui.set_max_width(700.0);
 
-                                egui::ScrollArea::horizontal().show(ui, |ui| {
-                                    ui.horizontal(|ui| {
-                                        for page in self_clone.pages.components() {
-                                            let curr_folder_name = page.as_os_str().to_str().unwrap();
-                                            path.push(curr_folder_name);
+                                egui::ScrollArea::horizontal().id_source("heading_scroll").show(ui, |ui| {
+                                    ui.heading(RichText::new(utils::get_clean_abs_path(rel_path).to_str().unwrap()).size(13.0));
+                                });
+                            });
 
-                                            ui_folders(ui, self, &counter, path.to_str().unwrap(), &screen_size.height());
-                                            counter += 1;
-                                        }
-                                    });
+                            let self_clone = self.clone();
+                            let mut counter = 0;
+                            let screen_size = ctx.available_rect();
+                            let mut path = PathBuf::new();
+
+                            // Horizontal area for the pages
+                            ui.horizontal(|ui| {
+                                ui.set_max_width(&screen_size.width() - 220.0);
+                                egui::ScrollArea::horizontal().id_source("body_scroll").show(ui, |ui| {
+
+                                    for page in self_clone.pages.components() {
+                                        let curr_folder_name = page.as_os_str().to_str().unwrap();
+                                        path.push(curr_folder_name);
+
+                                        ui_folders(ui, self, &counter, path.to_str().unwrap(), &screen_size.height());
+                                        counter += 1;
+
+                                        // Spacer area between pages
+                                        ui.vertical(|ui| {
+                                            ui.set_width(30.0);
+                                        });
+                                    }
                                 });
                             });
                         });
-                        //directory list
-                        // let pages_clone = self.pages.clone();
-                        // let mut counter = 1;
-                        // let screen_size = ui.max_rect();
-                        // egui::ScrollArea::horizontal().show(ui, |ui| {
-                        //     ui.horizontal(|ui| {
-                        //         for page in pages_clone {
-                        //             ui_folders(ui, &page.items, &mut self.pages, &counter, &screen_size.height());
-                        //             counter += 1;
-                        //         }
-                        //     });
-                        // });
+
                         egui::SidePanel::right("right_panel")
                             .resizable(true)
                             .default_width(200.0)
@@ -240,6 +234,7 @@ impl eframe::App for MyApp {
                                 });
                             });
                     });
+
                     // bottom
                     strip.strip(|builder| {
                         builder.sizes(Size::remainder(), 2).horizontal(|mut strip| {
