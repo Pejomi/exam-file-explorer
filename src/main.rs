@@ -1,14 +1,14 @@
 mod utils;
 mod app;
 
-use std::path::{Component, Components, PathBuf};
-use std::{fs, vec};
-use fs::canonicalize;
+use std::fs;
 use eframe::{self, egui, Frame, NativeOptions};
-use egui::{Context, Button, RichText, Color32, Stroke, Label, Sense, PointerButton, Visuals, Pos2, Vec2, ViewportBuilder};
-use std::vec::Vec;
+use egui::{Button, RichText, Color32, Stroke, Sense, PointerButton, Pos2, Vec2, ViewportBuilder};
+
 use crate::app::MyApp;
-use egui::Shape::Path;
+
+use utils::folders::*;
+use utils::files::*;
 
 fn main() {
     let options = NativeOptions {
@@ -51,7 +51,7 @@ fn ui_folders(ui: &mut egui::Ui, _self: &mut MyApp, index: &i32, curr_path: &str
                 painter.line_segment([start_point, end_point], stroke);
 
                 // Draw each item of the page
-                for path_obj in utils::get_folders(curr_path) {
+                for path_obj in get_folders(curr_path) {
                     let folder_name = path_obj.file_name().unwrap().to_str().unwrap();
                     let item_icon = if path_obj.is_dir() { "📁" } else { "📄" };
 
@@ -88,11 +88,11 @@ fn ui_folders(ui: &mut egui::Ui, _self: &mut MyApp, index: &i32, curr_path: &str
             if ui.button("Copy path").clicked() {
                 println!("{}", curr_path);
                 _self.context_menu_open = false;
-                ui.output_mut(|o| o.copied_text = utils::get_clean_abs_path(curr_path).to_str().unwrap().to_owned());
+                ui.output_mut(|o| o.copied_text = get_clean_abs_path(curr_path).to_str().unwrap().to_owned());
             }
 
             if ui.button("Create file").clicked() {
-                utils::create_file(curr_path, "test-text", "txt").expect("File creation expected");
+                create_file(curr_path, "test-text", "txt").expect("File creation expected");
                 _self.context_menu_open = false;
             }
         });

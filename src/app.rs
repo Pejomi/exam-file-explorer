@@ -1,10 +1,14 @@
 use std::path::PathBuf;
 use eframe::Frame;
 
-use egui::{Button, CollapsingHeader, Color32, Context, Label, Sense, RichText, TextEdit, Visuals, Pos2, AboveOrBelow};
-use egui::AboveOrBelow::Above;
+use egui::{Context, Label, Sense, Visuals};
+
 use crate::{ui_folders, utils};
 use egui_extras::{Size, StripBuilder};
+
+use utils::files::*;
+use utils::folders::*;
+
 #[derive(Default, Clone)]
 pub(crate) struct MyApp {
     pub(crate) pages: PathBuf,
@@ -53,7 +57,7 @@ impl eframe::App for MyApp {
                                             self.pages.pop();
                                         }
                                         // show current path and copy by click
-                                        let binding = utils::get_clean_abs_path(self.pages.to_str().unwrap());
+                                        let binding = get_clean_abs_path(self.pages.to_str().unwrap());
                                         let current_path = binding.to_str().unwrap();
 
                                         egui::ScrollArea::horizontal().id_source("heading_scroll").show(ui, |ui| {
@@ -167,7 +171,7 @@ impl eframe::App for MyApp {
                             // items count description
                             strip.cell(|ui| {
                                 ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                    let items_amount = utils::get_folders(self.pages.as_path().to_str().unwrap()).iter().count();
+                                    let items_amount = get_folders(self.pages.as_path().to_str().unwrap()).iter().count();
                                     ui.label(format!("{} items", items_amount)); // todo: replace X
                                     ui.label("|");
                                 });

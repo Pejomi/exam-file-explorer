@@ -7,3 +7,5 @@ edition = "2021"
 egui = "0.27.2"
 eframe = "0.27.2"
 egui_extras = { version = "*", features = ["all_loaders"] }
+rayon = "1.10.0"
+walkdir = "2.5.0"
