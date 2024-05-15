@@ -1,9 +1,9 @@
 use std::path::PathBuf;
-use crate::app::MyApp;
-use crate::ui_folders;
+use crate::app::App;
+use crate::utils::folders::*;
 use egui::{Context, ScrollArea};
 
-pub fn build_directory_list(ui: &mut egui::Ui,ctx: &Context, app: &mut MyApp) {
+pub fn build_directory_list(ui: &mut egui::Ui,ctx: &Context, app: &mut App) {
     egui::CentralPanel::default().show_inside(ui, |ui| {
         app.pages.to_str().unwrap();
 

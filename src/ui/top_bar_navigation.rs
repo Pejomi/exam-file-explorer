@@ -1,9 +1,9 @@
-use crate::app::MyApp;
+use crate::app::App;
 use crate::utils::files::*;
 
 use egui::{Label, Sense};
 
-pub fn build_navigation_bar(ui: &mut egui::Ui, app: &mut MyApp) {
+pub fn build_navigation_bar(ui: &mut egui::Ui, app: &mut App) {
     if ui.button("⬅").clicked() {
         app.pages.pop();
     }

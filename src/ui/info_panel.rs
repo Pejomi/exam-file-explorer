@@ -1,8 +1,8 @@
 use egui::ScrollArea;
 use egui_extras::{Size, StripBuilder};
-use crate::app::MyApp;
+use crate::app::App;
 
-pub fn build_info_panel(ui: &mut egui::Ui, app: &mut MyApp) {
+pub fn build_info_panel(ui: &mut egui::Ui, app: &mut App) {
     if let Some(file_data) = &app.highlighted_file {
         egui::SidePanel::right("right_panel")
             .resizable(true)

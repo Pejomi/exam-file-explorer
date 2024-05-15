@@ -16,7 +16,7 @@ use crate::ui::directory_list::build_directory_list;
 use crate::ui::info_panel::build_info_panel;
 
 #[derive(Default, Clone)]
-pub(crate) struct MyApp {
+pub(crate) struct App {
     pub(crate) pages: PathBuf,
     pub(crate) start_dir: String,
     pub(crate) files: Arc<Mutex<Vec<String>>>,
@@ -27,9 +27,9 @@ pub(crate) struct MyApp {
     pub(crate) context_menu_open: bool,
 }
 
-impl MyApp {
+impl App {
     pub(crate) fn new() -> Self {
-        let mut app = MyApp {
+        let mut app = App {
             pages: PathBuf::new(),
             start_dir: String::from("test-directory"),
             files: Arc::new(Mutex::new(Vec::new())),
@@ -51,7 +51,7 @@ impl MyApp {
     }
 }
 
-impl eframe::App for MyApp {
+impl eframe::App for App {
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             StripBuilder::new(ui)

@@ -1,9 +1,9 @@
 use std::thread;
 use crate::utils;
 
-use crate::app::MyApp;
+use crate::app::App;
 
-pub fn build_search_bar(ui: &mut egui::Ui, app: &mut MyApp) {
+pub fn build_search_bar(ui: &mut egui::Ui, app: &mut App) {
     if ui.button("Search").clicked() {
         app.search_result_menu_open = true;
         if !app.search_query.is_empty() {
