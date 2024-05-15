@@ -1,8 +1,11 @@
+use std::sync::{Arc, Mutex};
+use std::time::Instant;
 use walkdir::WalkDir;
 use rayon::prelude::*;
-use std::sync::{Arc, Mutex};
 
-pub fn search_for_files(root: &str, target_file_name: &str, files: Arc<Mutex<Vec<String>>>) {
+pub fn search_for_files(root: String, target_file_name: &str, files: Arc<Mutex<Vec<String>>>) {
+    let start_time = Instant::now();
+
     WalkDir::new(root)
         .into_iter()
         .par_bridge()
@@ -16,6 +19,10 @@ pub fn search_for_files(root: &str, target_file_name: &str, files: Arc<Mutex<Vec
         })
         .for_each(|entry| {
             let path = entry.path().display().to_string();
+            println!("{}", path);
             files.lock().unwrap().push(path);
         });
+
+    let elapsed_time = start_time.elapsed(); // Measure elapsed time
+    println!("Search completed in {} seconds", elapsed_time.as_secs_f32());
 }

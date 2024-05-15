@@ -1,7 +1,9 @@
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
+use std::thread;
 use eframe::Frame;
 
-use egui::{Context, Label, Sense, Visuals};
+use egui::{Context, Label, PointerButton, ScrollArea, Sense, Visuals};
 
 use crate::{ui_folders, utils};
 use egui_extras::{Size, StripBuilder};
@@ -13,7 +15,10 @@ use utils::folders::*;
 pub(crate) struct MyApp {
     pub(crate) pages: PathBuf,
     start_dir: String,
+    files: Arc<Mutex<Vec<String>>>,
+    searching: Arc<Mutex<bool>>,
     search_query: String,
+    search_result_menu_open: bool,
     pub(crate) context_menu_open: bool
 }
 
@@ -22,7 +27,10 @@ impl MyApp {
         let mut app = MyApp {
             pages: PathBuf::new(),
             start_dir: String::from("test-directory"),
+            files: Arc::new(Mutex::new(Vec::new())),
+            searching: Arc::new(Mutex::new(false)),
             search_query: String::new(),
+            search_result_menu_open: false,
             context_menu_open: false
         };
         app.initialize();
@@ -42,7 +50,6 @@ impl eframe::App for MyApp {
         egui::CentralPanel::default().show(ctx, |ui| {
             StripBuilder::new(ui)
                 .size(Size::exact(20.0))// top
-                // .size(Size::exact(20.0))// settings
                 .size(Size::remainder().at_least(70.0)) // body
                 .size(Size::exact(20.0)) // bottom
                 .vertical(|mut strip| {
@@ -70,15 +77,30 @@ impl eframe::App for MyApp {
                                 strip.cell(|ui| {
                                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                                         if ui.button("Search").clicked() {
-                                            // Trigger search action here
-                                            //search_by_name(&app.root_path, &app.search_query);
-                                            println!("Search query: {}", self.search_query)
+                                            self.search_result_menu_open = true;
+                                            if !self.search_query.is_empty() {
+                                                let files = self.files.clone();
+                                                let searching = self.searching.clone();
+                                                let query = self.search_query.clone();
+                                                let path = self.start_dir.clone();
+
+                                                *searching.lock().unwrap() = true;
+
+                                                thread::spawn(move || {
+                                                    utils::search::search_for_files(path, &query, files);
+                                                    *searching.lock().unwrap() = false;
+                                                });
+                                            }
                                         }
-                                        ui.add_sized(ui.available_size(), egui::TextEdit::singleline(&mut self.search_query));
+
+
+                                        ui.add_sized(ui.available_size(), egui::TextEdit::singleline(&mut self.search_query).hint_text("Enter file name"));
                                     });
                                 });
                             });
                     });
+
+
 
                     // body
                     strip.cell(|ui| {
