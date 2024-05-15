@@ -1,25 +1,28 @@
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use std::thread;
 use eframe::Frame;
 
-use egui::{Context, Label, PointerButton, ScrollArea, Sense, Visuals};
+use egui::{Context, ScrollArea, Visuals};
 
-use crate::{ui_folders, utils};
+use crate::{utils};
 use egui_extras::{Size, StripBuilder};
 
-use utils::files::*;
 use utils::folders::*;
 use crate::structs::file_data::FileData;
+
+use crate::ui::search_bar::build_search_bar;
+use crate::ui::top_bar_navigation::build_navigation_bar;
+use crate::ui::directory_list::build_directory_list;
+use crate::ui::info_panel::build_info_panel;
 
 #[derive(Default, Clone)]
 pub(crate) struct MyApp {
     pub(crate) pages: PathBuf,
-    start_dir: String,
-    files: Arc<Mutex<Vec<String>>>,
-    searching: Arc<Mutex<bool>>,
-    search_query: String,
-    search_result_menu_open: bool,
+    pub(crate) start_dir: String,
+    pub(crate) files: Arc<Mutex<Vec<String>>>,
+    pub(crate) searching: Arc<Mutex<bool>>,
+    pub(crate) search_query: String,
+    pub(crate) search_result_menu_open: bool,
     pub(crate) highlighted_file: Option<FileData>,
     pub(crate) context_menu_open: bool,
 }
@@ -56,141 +59,38 @@ impl eframe::App for MyApp {
                 .size(Size::remainder().at_least(70.0)) // body
                 .size(Size::exact(20.0)) // bottom
                 .vertical(|mut strip| {
-                    // top
+                    // Top panel
                     strip.strip(|builder| {
                         builder.size(Size::remainder())
                             .size(Size::relative(0.25).at_least(200.0))
                             .horizontal(|mut strip| {
+                                // Navigation
                                 strip.cell(|ui| {
                                     ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                        if ui.button("⬅").clicked() {
-                                            self.pages.pop();
-                                        }
-                                        // show current path and copy by click
-                                        let binding = get_clean_abs_path(self.pages.to_str().unwrap());
-                                        let current_path = binding.to_str().unwrap();
-
-                                        egui::ScrollArea::horizontal().id_source("heading_scroll").show(ui, |ui| {
-                                            if ui.add(Label::new(String::from("🏠 ".to_owned() + current_path)).sense(Sense::click())).on_hover_cursor(egui::CursorIcon::PointingHand).clicked() {
-                                                ui.output_mut(|o| o.copied_text = String::from(current_path));
-                                            }
-                                        });
+                                        build_navigation_bar(ui, self);
                                     });
                                 });
+                                // Search bar
                                 strip.cell(|ui| {
                                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                        if ui.button("Search").clicked() {
-                                            self.search_result_menu_open = true;
-                                            if !self.search_query.is_empty() {
-                                                let files = self.files.clone();
-                                                let searching = self.searching.clone();
-                                                let query = self.search_query.clone();
-                                                let path = self.start_dir.clone();
-
-                                                *searching.lock().unwrap() = true;
-
-                                                thread::spawn(move || {
-                                                    utils::search::search_for_files(path, &query, files);
-                                                    *searching.lock().unwrap() = false;
-                                                });
-                                            }
-                                        }
-
-
-                                        ui.add_sized(ui.available_size(), egui::TextEdit::singleline(&mut self.search_query).hint_text("Enter file name"));
+                                        build_search_bar(ui, self);
                                     });
                                 });
                             });
                     });
-
-
-                    // body
+                    // Body
                     strip.cell(|ui| {
                         ui.separator();
                         egui::CentralPanel::default().show_inside(ui, |ui| {
-                            egui::ScrollArea::vertical().show(ui, |ui| {
-                                //directory list
-                                egui::CentralPanel::default().show_inside(ui, |ui| {
-                                    let rel_path = self.pages.to_str().unwrap();
-
-                                    let self_clone = self.clone();
-                                    let mut counter = 0;
-                                    let screen_size = ctx.available_rect();
-                                    let mut path = PathBuf::new();
-
-                                    // Horizontal area for the pages
-                                    ui.horizontal(|ui| {
-                                        ui.set_max_width(&screen_size.width() - 220.0);
-                                        egui::ScrollArea::horizontal().id_source("body_scroll").show(ui, |ui| {
-                                            for page in self_clone.pages.components() {
-                                                let curr_folder_name = page.as_os_str().to_str().unwrap();
-                                                path.push(curr_folder_name);
-
-                                                ui_folders(ui, self, &counter, path.to_str().unwrap(), &screen_size.height());
-                                                counter += 1;
-
-                                                // Spacer area between pages
-                                                ui.vertical(|ui| {
-                                                    ui.set_width(30.0);
-                                                });
-                                            }
-                                        });
-                                    });
-                                });
-                                if let Some(file_data) = &self.highlighted_file {
-                                    egui::SidePanel::right("right_panel")
-                                        .resizable(true)
-                                        .default_width(200.0)
-                                        .width_range(200.0..=500.0)
-                                        .show_inside(ui, |ui| {
-                                            ui.vertical(|ui| {
-                                                ScrollArea::vertical().show(ui, |ui| {
-                                                    // description of a clicked file
-                                                    ui.heading(file_data.name.as_str());
-                                                    StripBuilder::new(ui)
-                                                        .size(Size::exact(20.0))
-                                                        .vertical(|mut strip| {
-                                                            strip.strip(|builder| {
-                                                                builder.sizes(Size::remainder(), 2).horizontal(|mut strip| {
-                                                                    strip.cell(|ui| {
-                                                                        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                                                            ui.label("Type");
-                                                                        });
-                                                                        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                                                            ui.label("Size");
-                                                                        });
-                                                                        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                                                            ui.label("File location");
-                                                                        });
-                                                                        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                                                            ui.label("Date modified");
-                                                                        });
-                                                                    });
-                                                                    strip.cell(|ui| {
-                                                                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                                                            ui.label(file_data.file_type.as_str())
-                                                                        });
-                                                                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                                                            ui.label(file_data.size.to_string());
-                                                                        });
-                                                                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                                                            ui.label(file_data.path.as_str())
-                                                                        });
-                                                                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                                                            ui.label("TODO") // TODO replace with date
-                                                                        });
-                                                                    });
-                                                                });
-                                                            });
-                                                        });
-                                                });
-                                            });
-                                        });
-                                }
+                            ScrollArea::vertical().show(ui, |ui| {
+                                // Directory list
+                                build_directory_list(ui, ctx, self);
+                                // Right panel
+                                build_info_panel(ui, self);
                             });
                         });
                     });
-                    // bottom
+                    // Bottom
                     strip.strip(|builder| {
                         builder.sizes(Size::remainder(), 2).horizontal(|mut strip| {
                             // items count description
@@ -221,42 +121,3 @@ impl eframe::App for MyApp {
         });
     }
 }
-//todo: make a run app method
-// table display list
-// TableBuilder::new(ui)
-//     //.striped(true)
-//     .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
-//     .column(Column::remainder().resizable(true))
-//     .column(Column::remainder().resizable(true))
-//     .column(Column::remainder().resizable(true))
-//     .column(Column::remainder().resizable(true))
-//     .header(20.0, |mut header| {
-//         header.col(|ui| {
-//             ui.label("Name");
-//         });
-//         header.col(|ui| {
-//             ui.label("Date modified");
-//         });
-//         header.col(|ui| {
-//             ui.label("Type");
-//         });
-//         header.col(|ui| {
-//             ui.label("Size");
-//         });
-//     })
-//     .body(|mut body| { // todo: loop and display files from current path
-//         body.row(30.0, |mut row| {
-//             row.col(|ui| {
-//                 ui.label("Hello");
-//             });
-//             row.col(|ui| {
-//                 ui.label("Hello");
-//             });
-//             row.col(|ui| {
-//                 ui.label("Hello");
-//             });
-//             row.col(|ui| {
-//                 ui.button("world!");
-//             });
-//         });
-//     });

@@ -1,6 +1,7 @@
 mod utils;
 mod app;
 mod structs;
+mod ui;
 
 use std::fs;
 use eframe::{self, egui, Frame, NativeOptions};
