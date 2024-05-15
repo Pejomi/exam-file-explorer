@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 use eframe::Frame;
-use egui::{Button, CollapsingHeader, Color32, Context, RichText, TextEdit, Visuals};
+use egui::{Button, CollapsingHeader, Color32, Context, RichText, TextEdit, Visuals, Pos2, AboveOrBelow};
+use egui::AboveOrBelow::Above;
 use crate::{ui_folders, utils};
 use egui_extras::{TableBuilder, Column};
 use egui_extras::{Size, StripBuilder};
@@ -8,7 +9,8 @@ use egui_extras::{Size, StripBuilder};
 pub(crate) struct MyApp {
     pages: PathBuf,
     start_dir: String,
-    search_query: String
+    search_query: String,
+    pub(crate) context_menu_open: bool
 }
 
 impl MyApp {
@@ -16,7 +18,8 @@ impl MyApp {
         let mut app = MyApp {
             pages: PathBuf::new(),
             start_dir: String::from("test-directory"),
-            search_query: String::new()
+            search_query: String::new(),
+            context_menu_open: false
         };
         app.initialize();
         app
@@ -60,127 +63,47 @@ impl eframe::App for MyApp {
                             });
                         });
                     });
-                    // settings
-                    // strip.strip(|builder| {
-                    //     builder.size(Size::remainder()).horizontal(|mut strip| {
-                    //         strip.cell(|ui| {
-                    //             ui.ctx().debug_painter().debug_rect(
-                    //                 ui.max_rect(),
-                    //                 Color32::RED,
-                    //                 "Settings",
-                    //             );
-                    //             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                    //                 ui.button("🗑");
-                    //
-                    //             });
-                    //         });
-                    //     });
-                    // });
-
 
                     // body
                     strip.cell(|ui| {
-                        // egui::SidePanel::left("left_panel")
-                        //     .resizable(true)
-                        //     .default_width(100.0)
-                        //     .width_range(100.0..=500.0)
-                        //     .show_inside(ui, |ui| {
-                        //         ui.vertical(|ui| {
-                        //         egui::ScrollArea::vertical().show(ui, |ui| {
-                        //             // directory tree // todo: replace dummy text
-                        //             CollapsingHeader::new("Home")
-                        //                 .id_source("1")
-                        //                 .default_open(false)
-                        //                 .show(ui, |ui| {
-                        //                     ui.label("hello hello hello hello hello hello");
-                        //                     ui.label("hello");
-                        //                     CollapsingHeader::new("Home")
-                        //                         .default_open(false)
-                        //                         .show(ui, |ui| {
-                        //                             ui.label("hello");
-                        //                             ui.label("hello");
-                        //                             ui.label("hello")
-                        //                         })
-                        //                         .body_returned;
-                        //                 })
-                        //                 .body_returned;
-                        //             });
-                        //         });
-                        //     });
-
                         egui::CentralPanel::default().show_inside(ui, |ui| {
-                            egui::ScrollArea::vertical().show(ui, |ui| {
-                                // table display list
-                                // TableBuilder::new(ui)
-                                //     //.striped(true)
-                                //     .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
-                                //     .column(Column::remainder().resizable(true))
-                                //     .column(Column::remainder().resizable(true))
-                                //     .column(Column::remainder().resizable(true))
-                                //     .column(Column::remainder().resizable(true))
-                                //     .header(20.0, |mut header| {
-                                //         header.col(|ui| {
-                                //             ui.label("Name");
-                                //         });
-                                //         header.col(|ui| {
-                                //             ui.label("Date modified");
-                                //         });
-                                //         header.col(|ui| {
-                                //             ui.label("Type");
-                                //         });
-                                //         header.col(|ui| {
-                                //             ui.label("Size");
-                                //         });
-                                //     })
-                                //     .body(|mut body| { // todo: loop and display files from current path
-                                //         body.row(30.0, |mut row| {
-                                //             row.col(|ui| {
-                                //                 ui.label("Hello");
-                                //             });
-                                //             row.col(|ui| {
-                                //                 ui.label("Hello");
-                                //             });
-                                //             row.col(|ui| {
-                                //                 ui.label("Hello");
-                                //             });
-                                //             row.col(|ui| {
-                                //                 ui.button("world!");
-                                //             });
-                                //         });
-                                //     });
-                                //directory list
-                                ui.heading(RichText::new(utils::get_clean_abs_path(self.pages.to_str().unwrap()).to_str().unwrap()).size(13.0));
+                            let rel_path = self.pages.to_str().unwrap();
 
-                                let self_clone = self.clone();
-                                let mut counter = 0;
-                                let screen_size = ctx.available_rect();
-                                let mut path = PathBuf::new();
+                            // Horizontal area for the heading
+                            ui.horizontal(|ui| {
+                                ui.set_max_width(700.0);
 
-                                egui::ScrollArea::horizontal().show(ui, |ui| {
-                                    ui.horizontal(|ui| {
-                                        for page in self_clone.pages.components() {
-                                            let curr_folder_name = page.as_os_str().to_str().unwrap();
-                                            path.push(curr_folder_name);
+                                egui::ScrollArea::horizontal().id_source("heading_scroll").show(ui, |ui| {
+                                    ui.heading(RichText::new(utils::get_clean_abs_path(rel_path).to_str().unwrap()).size(13.0));
+                                });
+                            });
 
-                                            ui_folders(ui, self, &counter, path.to_str().unwrap(), &screen_size.height());
-                                            counter += 1;
-                                        }
-                                    });
+                            let self_clone = self.clone();
+                            let mut counter = 0;
+                            let screen_size = ctx.available_rect();
+                            let mut path = PathBuf::new();
+
+                            // Horizontal area for the pages
+                            ui.horizontal(|ui| {
+                                ui.set_max_width(&screen_size.width() - 220.0);
+                                egui::ScrollArea::horizontal().id_source("body_scroll").show(ui, |ui| {
+
+                                    for page in self_clone.pages.components() {
+                                        let curr_folder_name = page.as_os_str().to_str().unwrap();
+                                        path.push(curr_folder_name);
+
+                                        ui_folders(ui, self, &counter, path.to_str().unwrap(), &screen_size.height());
+                                        counter += 1;
+
+                                        // Spacer area between pages
+                                        ui.vertical(|ui| {
+                                            ui.set_width(30.0);
+                                        });
+                                    }
                                 });
                             });
                         });
-                        //directory list
-                        // let pages_clone = self.pages.clone();
-                        // let mut counter = 1;
-                        // let screen_size = ui.max_rect();
-                        // egui::ScrollArea::horizontal().show(ui, |ui| {
-                        //     ui.horizontal(|ui| {
-                        //         for page in pages_clone {
-                        //             ui_folders(ui, &page.items, &mut self.pages, &counter, &screen_size.height());
-                        //             counter += 1;
-                        //         }
-                        //     });
-                        // });
+
                         egui::SidePanel::right("right_panel")
                             .resizable(true)
                             .default_width(200.0)
@@ -230,6 +153,7 @@ impl eframe::App for MyApp {
                                 });
                             });
                     });
+
                     // bottom
                     strip.strip(|builder| {
                         builder.sizes(Size::remainder(), 2).horizontal(|mut strip| {
