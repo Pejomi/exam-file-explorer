@@ -10,6 +10,7 @@ use egui_extras::{Size, StripBuilder};
 
 use utils::files::*;
 use utils::folders::*;
+use crate::structs::file_data::FileData;
 
 #[derive(Default, Clone)]
 pub(crate) struct MyApp {
@@ -19,7 +20,8 @@ pub(crate) struct MyApp {
     searching: Arc<Mutex<bool>>,
     search_query: String,
     search_result_menu_open: bool,
-    pub(crate) context_menu_open: bool
+    pub(crate) highlighted_file: Option<FileData>,
+    pub(crate) context_menu_open: bool,
 }
 
 impl MyApp {
@@ -31,7 +33,8 @@ impl MyApp {
             searching: Arc::new(Mutex::new(false)),
             search_query: String::new(),
             search_result_menu_open: false,
-            context_menu_open: false
+            highlighted_file: None,
+            context_menu_open: false,
         };
         app.initialize();
         app
@@ -40,7 +43,7 @@ impl MyApp {
     fn initialize(&mut self) {
         self.pages = PathBuf::from(&self.start_dir);
     }
-    pub(crate) fn add_page(&mut self, folder_name: &str){
+    pub(crate) fn add_page(&mut self, folder_name: &str) {
         self.pages.push(folder_name);
     }
 }
@@ -101,7 +104,6 @@ impl eframe::App for MyApp {
                     });
 
 
-
                     // body
                     strip.cell(|ui| {
                         ui.separator();
@@ -135,55 +137,56 @@ impl eframe::App for MyApp {
                                         });
                                     });
                                 });
-
-                                egui::SidePanel::right("right_panel")
-                                    .resizable(true)
-                                    .default_width(200.0)
-                                    .width_range(200.0..=500.0)
-                                    .show_inside(ui, |ui| {
-                                        ui.vertical(|ui| {
-                                            egui::ScrollArea::vertical().show(ui, |ui| {
-                                                // description of a clicked file
-                                                ui.heading("File name"); //todo: insert clicked file name here
-                                                StripBuilder::new(ui)
-                                                    .size(Size::exact(20.0))
-                                                    .vertical(|mut strip| {
-                                                        strip.strip(|builder| {
-                                                            builder.sizes(Size::remainder(), 2).horizontal(|mut strip| {
-                                                                strip.cell(|ui| {
-                                                                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                                                        ui.label("Type");
+                                if let Some(file_data) = &self.highlighted_file {
+                                    egui::SidePanel::right("right_panel")
+                                        .resizable(true)
+                                        .default_width(200.0)
+                                        .width_range(200.0..=500.0)
+                                        .show_inside(ui, |ui| {
+                                            ui.vertical(|ui| {
+                                                ScrollArea::vertical().show(ui, |ui| {
+                                                    // description of a clicked file
+                                                    ui.heading(file_data.name.as_str());
+                                                    StripBuilder::new(ui)
+                                                        .size(Size::exact(20.0))
+                                                        .vertical(|mut strip| {
+                                                            strip.strip(|builder| {
+                                                                builder.sizes(Size::remainder(), 2).horizontal(|mut strip| {
+                                                                    strip.cell(|ui| {
+                                                                        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                                                                            ui.label("Type");
+                                                                        });
+                                                                        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                                                                            ui.label("Size");
+                                                                        });
+                                                                        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                                                                            ui.label("File location");
+                                                                        });
+                                                                        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                                                                            ui.label("Date modified");
+                                                                        });
                                                                     });
-                                                                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                                                        ui.label("Size");
-                                                                    });
-                                                                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                                                        ui.label("File location");
-                                                                    });
-                                                                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                                                        ui.label("Date modified");
-                                                                    });
-                                                                });
-                                                                strip.cell(|ui| {
-                                                                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                                                        ui.label("Some text") // todo: replace dummy text
-                                                                    });
-                                                                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                                                        ui.label("Some text") // todo: replace dummy text
-                                                                    });
-                                                                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                                                        ui.label("Some text") // todo: replace dummy text
-                                                                    });
-                                                                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                                                        ui.label("Some text") // todo: replace dummy text
+                                                                    strip.cell(|ui| {
+                                                                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                                                                            ui.label(file_data.file_type.as_str())
+                                                                        });
+                                                                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                                                                            ui.label(file_data.size.to_string());
+                                                                        });
+                                                                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                                                                            ui.label(file_data.path.as_str())
+                                                                        });
+                                                                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                                                                            ui.label("TODO") // TODO replace with date
+                                                                        });
                                                                     });
                                                                 });
                                                             });
                                                         });
-                                                    });
+                                                });
                                             });
                                         });
-                                    });
+                                }
                             });
                         });
                     });

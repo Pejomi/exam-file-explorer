@@ -1,5 +1,6 @@
 mod utils;
 mod app;
+mod structs;
 
 use std::fs;
 use eframe::{self, egui, Frame, NativeOptions};
@@ -9,6 +10,8 @@ use crate::app::MyApp;
 
 use utils::folders::*;
 use utils::files::*;
+use structs::file_data::FileData;
+
 
 fn main() {
     let options = NativeOptions {
@@ -26,12 +29,10 @@ fn main() {
 }
 
 
-
 fn ui_folders(ui: &mut egui::Ui, _self: &mut MyApp, index: &i32, curr_path: &str, screen_height: &f32) {
-
     let (rect, response) = ui.allocate_exact_size(
         egui::vec2(200.0, *screen_height - 100.0),
-        Sense::click()
+        Sense::click(),
     );
 
     let mut painter = ui.painter_at(rect).to_owned();
@@ -39,7 +40,6 @@ fn ui_folders(ui: &mut egui::Ui, _self: &mut MyApp, index: &i32, curr_path: &str
     painter.rect_filled(rect, 0.0, Color32::TRANSPARENT);
 
     ui.allocate_ui_at_rect(rect, |ui| {
-
         ui.vertical(|ui| {
             let scroll_id = egui::Id::new("scroll_area").with(index);
 
@@ -54,6 +54,7 @@ fn ui_folders(ui: &mut egui::Ui, _self: &mut MyApp, index: &i32, curr_path: &str
                 for path_obj in get_folders(curr_path) {
                     let folder_name = path_obj.file_name().unwrap().to_str().unwrap();
                     let item_icon = if path_obj.is_dir() { "📁" } else { "📄" };
+
 
                     let mut item_button = Button::new(RichText::new(format!("{} {}", item_icon, folder_name))
                         .size(16.0));
@@ -71,12 +72,26 @@ fn ui_folders(ui: &mut egui::Ui, _self: &mut MyApp, index: &i32, curr_path: &str
                     }
 
                     if ui.add(item_button).clicked() {
-                        _self.add_page(folder_name);
+                        if path_obj.is_dir() {
+                            _self.add_page(folder_name);
+                        } else {
+                            let metadata = fs::metadata(&path_obj).unwrap();
+
+                            let file_data = FileData {
+                                path: path_obj.to_str().unwrap().to_owned(),
+                                name: folder_name.to_owned(),
+                                size: metadata.len(),
+                                file_type: "txt".to_owned(),
+                                creation_time: metadata.created().unwrap(),
+                                last_access_time: metadata.accessed().unwrap(),
+                                last_modification_time: metadata.modified().unwrap(),
+                            };
+                            _self.highlighted_file = Some(file_data.clone());
+                        }
                     }
                 }
             });
         });
-
     });
 
     if response.clicked_by(PointerButton::Secondary) {
@@ -98,7 +113,6 @@ fn ui_folders(ui: &mut egui::Ui, _self: &mut MyApp, index: &i32, curr_path: &str
         });
     }
 }
-
 
 
 // button.context_menu(|ui| {
