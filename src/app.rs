@@ -50,7 +50,9 @@ impl eframe::App for MyApp {
                                         self.pages.pop();
                                     }
                                     // show current path and copy by click
-                                    let current_path = utils::get_clean_abs_path(self.pages.to_str().unwrap()).to_str().unwrap();
+                                    let binding = utils::get_clean_abs_path(self.pages.to_str().unwrap());
+                                    let current_path = binding.to_str().unwrap();
+
                                     if ui.add(Label::new(String::from("🏠 ".to_owned() + current_path)).sense(Sense::click())).on_hover_cursor(egui::CursorIcon::PointingHand).clicked() {
                                         ui.output_mut(|o| o.copied_text = String::from(current_path));
                                     }
