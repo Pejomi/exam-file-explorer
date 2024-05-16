@@ -1,10 +1,12 @@
 use std::path::PathBuf;
-use std::fs;
+use std::{fs, io};
 
-pub fn get_folders(root_path: &str) -> Vec<PathBuf> {
+pub fn get_folders(root_path: &str) -> io::Result<Vec<PathBuf>> {
     let mut folder_vec = Vec::new();
 
-    match fs::read_dir(root_path){
+    let read_dir = fs::read_dir(root_path);
+
+    match read_dir {
         Ok(entries) => {
             for entry in entries {
                 match entry {
@@ -14,9 +16,10 @@ pub fn get_folders(root_path: &str) -> Vec<PathBuf> {
                     Err(e) => eprintln!("Error: {e}")
                 }
             }
+
+            Ok(folder_vec)
         }
-        Err(e) => eprintln!("Error: {e}")
+        Err(e) => Err(e)
     }
 
-    folder_vec
 }
