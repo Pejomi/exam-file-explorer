@@ -6,6 +6,7 @@ use utils::files::*;
 
 use crate::app::App;
 use crate::structs::file_data::FileData;
+use crate::ui::theme::get_theme;
 use crate::utils;
 
 
@@ -27,7 +28,7 @@ pub fn ui_folders(ui: &mut egui::Ui, _self: &mut App, index: &i32, curr_path: &s
                 // Draw separating line
                 let start_point = Pos2::new(rect.max.x, rect.min.y);
                 let end_point = Pos2::new(rect.max.x, rect.max.y);
-                let stroke = Stroke::new(2.0, Color32::DARK_GRAY);
+                let stroke = Stroke::new(2.0, get_theme(_self.theme_mode.clone()).0.stroke);
                 painter.line_segment([start_point, end_point], stroke);
 
                 // Draw each item of the page
@@ -43,12 +44,7 @@ pub fn ui_folders(ui: &mut egui::Ui, _self: &mut App, index: &i32, curr_path: &s
                         item_button = item_button.fill(Color32::TRANSPARENT);
                         item_button = item_button.stroke(Stroke::NONE);
                     } else if _self.pages.to_str().unwrap().contains(path_obj.to_str().unwrap()) {
-                        let selected_bg: Color32 = if ui.visuals().dark_mode {
-                            Color32::from_rgb(59, 40, 204)
-                        } else {
-                            Color32::from_rgb(135, 191, 255)
-                        };
-                        item_button = item_button.fill(selected_bg);
+                        item_button = item_button.fill(get_theme(_self.theme_mode.clone()).0.tertiary);
                     }
 
                     if ui.add(item_button).clicked() {

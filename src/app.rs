@@ -1,11 +1,11 @@
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use eframe::Frame;
+use eframe::{Frame};
 
-use egui::{Context, ScrollArea, Visuals};
-
+use egui::{Context, ScrollArea};
 use crate::{utils};
 use egui_extras::{Size, StripBuilder};
+use enum_iterator::all;
 
 use utils::folders::*;
 use crate::structs::file_data::FileData;
@@ -14,7 +14,7 @@ use crate::ui::search_bar::build_search_bar;
 use crate::ui::top_bar_navigation::build_navigation_bar;
 use crate::ui::directory_list::build_directory_list;
 use crate::ui::info_panel::build_info_panel;
-
+use crate::ui::theme::{get_theme, Mode, set_theme};
 #[derive(Default, Clone)]
 pub(crate) struct App {
     pub(crate) pages: PathBuf,
@@ -25,6 +25,7 @@ pub(crate) struct App {
     pub(crate) search_result_menu_open: bool,
     pub(crate) highlighted_file: Option<FileData>,
     pub(crate) context_menu_open: bool,
+    pub(crate) theme_mode: Mode,
 }
 
 impl App {
@@ -38,6 +39,7 @@ impl App {
             search_result_menu_open: false,
             highlighted_file: None,
             context_menu_open: false,
+            theme_mode: Mode::Light,
         };
         app.initialize();
         app
@@ -53,6 +55,7 @@ impl App {
 
 impl eframe::App for App {
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
+        set_theme(ctx, get_theme(self.theme_mode.clone()).0);
         egui::CentralPanel::default().show(ctx, |ui| {
             StripBuilder::new(ui)
                 .size(Size::exact(20.0))// top
@@ -97,7 +100,7 @@ impl eframe::App for App {
                             strip.cell(|ui| {
                                 ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                                     let items_amount = get_folders(self.pages.as_path().to_str().unwrap()).iter().count();
-                                    ui.label(format!("{} items", items_amount)); // todo: replace X
+                                    ui.label(format!("{} items", items_amount));
                                     ui.label("|");
                                 });
                             });
@@ -105,14 +108,13 @@ impl eframe::App for App {
                             // light/dark mode settings
                             strip.cell(|ui| {
                                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                    if ui.button("☀/🌙").clicked() {
-                                        let visuals = if ui.visuals().dark_mode {
-                                            Visuals::light()
-                                        } else {
-                                            Visuals::dark()
-                                        };
-                                        ctx.set_visuals(visuals);
-                                    }
+                                    egui::ComboBox::from_label("Theme:")
+                                        .selected_text(get_theme(self.theme_mode.clone()).1)
+                                        .show_ui(ui, |ui| {
+                                            for mode in all::<Mode>().collect::<Vec<_>>() {
+                                                ui.selectable_value(&mut self.theme_mode, mode, get_theme(mode.clone()).1);
+                                            }
+                                        });
                                 });
                             });
                         });
