@@ -102,7 +102,7 @@ impl eframe::App for App {
                             // items count description
                             strip.cell(|ui| {
                                 ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                    let items_amount = get_folders(self.pages.as_path().to_str().unwrap()).iter().count();
+                                    let items_amount = get_folders(self.pages.as_path().to_str().unwrap()).unwrap().iter().count();
                                     ui.label(format!("{} items", items_amount));
                                     ui.label("|");
                                 });
