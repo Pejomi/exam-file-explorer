@@ -38,7 +38,7 @@ impl App {
             files: Arc::new(Mutex::new(Vec::new())),
             searching: Arc::new(Mutex::new(false)),
             search_query: String::new(),
-            folder_context_menu: String::new()
+            folder_context_menu: String::new(),
             search_result_menu_open: false,
             highlighted_file: None,
             context_menu_open: false,

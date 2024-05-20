@@ -123,7 +123,7 @@ pub fn ui_folders(ui: &mut egui::Ui, _self: &mut App, index: &i32, curr_path: &s
             if ui.button("Copy path").clicked() {
                 println!("{}", curr_path);
                 _self.context_menu_open = false;
-                ui.output_mut(|o| o.copied_text = get_clean_abs_path(curr_path).to_str().unwrap().to_owned());
+                ui.output_mut(|o| o.copied_text = get_clean_abs_path(curr_path).expect("Expected clean abs path").to_str().unwrap().to_owned());
             }
 
             if ui.button("Create file").clicked() {
