@@ -1,36 +1,48 @@
 use std::path::PathBuf;
-use eframe::Frame;
+use std::sync::{Arc, Mutex};
+use eframe::{Frame};
 
-use egui::{Context, Label, Sense, Visuals};
-
-use crate::{ui_folders, utils};
+use egui::{Context, ScrollArea};
+use crate::{utils};
 use egui_extras::{Size, StripBuilder};
+use enum_iterator::all;
 
-use utils::files::*;
 use utils::folders::*;
+use crate::structs::file_data::FileData;
 
-pub enum LoopControl {
-    Continue,
-    BreakOuterLoop(String)
-}
+use crate::ui::search_bar::build_search_bar;
+use crate::ui::top_bar_navigation::build_navigation_bar;
+use crate::ui::directory_list::build_directory_list;
+use crate::ui::info_panel::build_info_panel;
+use crate::ui::theme::{get_theme, Mode, set_theme};
 
 #[derive(Default, Clone)]
-pub(crate) struct MyApp {
+pub(crate) struct App {
     pub(crate) pages: PathBuf,
-    start_dir: String,
-    search_query: String,
+    pub(crate) start_dir: String,
+    pub(crate) files: Arc<Mutex<Vec<String>>>,
+    pub(crate) searching: Arc<Mutex<bool>>,
+    pub(crate) search_query: String,
+    pub(crate) search_result_menu_open: bool,
+    pub(crate) highlighted_file: Option<FileData>,
     pub(crate) context_menu_open: bool,
+    pub(crate) theme_mode: Mode,
     pub(crate) folder_context_menu: String,
 }
 
-impl MyApp {
-    pub(crate) fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        let mut app = MyApp {
+impl App {
+    pub(crate) fn new() -> Self {
+        let mut app = App {
             pages: PathBuf::new(),
             start_dir: String::from("test-directory"),
+            files: Arc::new(Mutex::new(Vec::new())),
+            searching: Arc::new(Mutex::new(false)),
             search_query: String::new(),
-            context_menu_open: false,
             folder_context_menu: String::new()
+            search_result_menu_open: false,
+            highlighted_file: None,
+            context_menu_open: false,
+            theme_mode: Mode::Light,
         };
         app.initialize();
         app
@@ -39,142 +51,59 @@ impl MyApp {
     fn initialize(&mut self) {
         self.pages = PathBuf::from(&self.start_dir);
     }
-    pub(crate) fn add_page(&mut self, folder_name: &str){
+    pub(crate) fn add_page(&mut self, folder_name: &str) {
         self.pages.push(folder_name);
     }
 }
 
-impl eframe::App for MyApp {
+impl eframe::App for App {
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
+        set_theme(ctx, get_theme(self.theme_mode.clone()).0);
         egui::CentralPanel::default().show(ctx, |ui| {
             StripBuilder::new(ui)
                 .size(Size::exact(20.0))// top
-                // .size(Size::exact(20.0))// settings
                 .size(Size::remainder().at_least(70.0)) // body
                 .size(Size::exact(20.0)) // bottom
                 .vertical(|mut strip| {
-                    // top
+                    // Top panel
                     strip.strip(|builder| {
                         builder.size(Size::remainder())
                             .size(Size::relative(0.25).at_least(200.0))
                             .horizontal(|mut strip| {
+                                // Navigation
                                 strip.cell(|ui| {
                                     ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                        if ui.button("⬅").clicked() {
-                                            self.pages.pop();
-                                        }
-                                        // show current path and copy by click
-                                        let binding = get_clean_abs_path(self.pages.to_str().unwrap()).unwrap();
-                                        let current_path = binding.to_str().unwrap();
-
-                                        egui::ScrollArea::horizontal().id_source("heading_scroll").show(ui, |ui| {
-                                            if ui.add(Label::new(String::from("🏠 ".to_owned() + current_path)).sense(Sense::click())).on_hover_cursor(egui::CursorIcon::PointingHand).clicked() {
-                                                ui.output_mut(|o| o.copied_text = String::from(current_path));
-                                            }
-                                        });
+                                        build_navigation_bar(ui, self);
                                     });
                                 });
+                                // Search bar
                                 strip.cell(|ui| {
                                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                        if ui.button("Search").clicked() {
-                                            // Trigger search action here
-                                            //search_by_name(&app.root_path, &app.search_query);
-                                            println!("Search query: {}", self.search_query)
-                                        }
-                                        ui.add_sized(ui.available_size(), egui::TextEdit::singleline(&mut self.search_query));
+                                        build_search_bar(ui, self);
                                     });
                                 });
                             });
                     });
-
-                    // body
+                    // Body
                     strip.cell(|ui| {
                         ui.separator();
                         egui::CentralPanel::default().show_inside(ui, |ui| {
-                            egui::ScrollArea::vertical().show(ui, |ui| {
-                                //directory list
-                                egui::CentralPanel::default().show_inside(ui, |ui| {
-                                    let self_clone = self.clone();
-                                    let mut counter:u32 = 0;
-                                    let screen_size = ctx.available_rect();
-                                    let mut path = PathBuf::new();
-
-                                    // Horizontal area for the pages
-                                    ui.horizontal(|ui| {
-                                        ui.set_max_width(&screen_size.width() - 220.0);
-                                        egui::ScrollArea::horizontal().id_source("body_scroll").show(ui, |ui| {
-
-                                            for page in self_clone.pages.components() {
-                                                let curr_folder_name = page.as_os_str().to_str().unwrap();
-                                                path.push(curr_folder_name);
-
-                                                ui_folders(ui, self, &counter, path.to_str().unwrap(), &screen_size.height());
-
-                                                counter += 1;
-                                            }
-                                        });
-                                    });
-                                });
-
-                                egui::SidePanel::right("right_panel")
-                                    .resizable(true)
-                                    .default_width(200.0)
-                                    .width_range(200.0..=500.0)
-                                    .show_inside(ui, |ui| {
-                                        ui.vertical(|ui| {
-                                            egui::ScrollArea::vertical().show(ui, |ui| {
-                                                // description of a clicked file
-                                                ui.heading("File name"); //todo: insert clicked file name here
-                                                StripBuilder::new(ui)
-                                                    .size(Size::exact(20.0))
-                                                    .vertical(|mut strip| {
-                                                        strip.strip(|builder| {
-                                                            builder.sizes(Size::remainder(), 2).horizontal(|mut strip| {
-                                                                strip.cell(|ui| {
-                                                                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                                                        ui.label("Type");
-                                                                    });
-                                                                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                                                        ui.label("Size");
-                                                                    });
-                                                                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                                                        ui.label("File location");
-                                                                    });
-                                                                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                                                        ui.label("Date modified");
-                                                                    });
-                                                                });
-                                                                strip.cell(|ui| {
-                                                                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                                                        ui.label("Some text") // todo: replace dummy text
-                                                                    });
-                                                                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                                                        ui.label("Some text") // todo: replace dummy text
-                                                                    });
-                                                                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                                                        ui.label("Some text") // todo: replace dummy text
-                                                                    });
-                                                                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                                                        ui.label("Some text") // todo: replace dummy text
-                                                                    });
-                                                                });
-                                                            });
-                                                        });
-                                                    });
-                                            });
-                                        });
-                                    });
+                            ScrollArea::vertical().show(ui, |ui| {
+                                // Directory list
+                                build_directory_list(ui, ctx, self);
+                                // Right panel
+                                build_info_panel(ui, self);
                             });
                         });
                     });
-                    // bottom
+                    // Bottom
                     strip.strip(|builder| {
                         builder.sizes(Size::remainder(), 2).horizontal(|mut strip| {
                             // items count description
                             strip.cell(|ui| {
                                 ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                                     let items_amount = get_folders(self.pages.as_path().to_str().unwrap()).iter().count();
-                                    ui.label(format!("{} items", items_amount)); // todo: replace X
+                                    ui.label(format!("{} items", items_amount));
                                     ui.label("|");
                                 });
                             });
@@ -182,14 +111,13 @@ impl eframe::App for MyApp {
                             // light/dark mode settings
                             strip.cell(|ui| {
                                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                    if ui.button("☀/🌙").clicked() {
-                                        let visuals = if ui.visuals().dark_mode {
-                                            Visuals::light()
-                                        } else {
-                                            Visuals::dark()
-                                        };
-                                        ctx.set_visuals(visuals);
-                                    }
+                                    egui::ComboBox::from_label("Theme:")
+                                        .selected_text(get_theme(self.theme_mode.clone()).1)
+                                        .show_ui(ui, |ui| {
+                                            for mode in all::<Mode>().collect::<Vec<_>>() {
+                                                ui.selectable_value(&mut self.theme_mode, mode, get_theme(mode.clone()).1);
+                                            }
+                                        });
                                 });
                             });
                         });
@@ -198,42 +126,3 @@ impl eframe::App for MyApp {
         });
     }
 }
-//todo: make a run app method
-// table display list
-// TableBuilder::new(ui)
-//     //.striped(true)
-//     .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
-//     .column(Column::remainder().resizable(true))
-//     .column(Column::remainder().resizable(true))
-//     .column(Column::remainder().resizable(true))
-//     .column(Column::remainder().resizable(true))
-//     .header(20.0, |mut header| {
-//         header.col(|ui| {
-//             ui.label("Name");
-//         });
-//         header.col(|ui| {
-//             ui.label("Date modified");
-//         });
-//         header.col(|ui| {
-//             ui.label("Type");
-//         });
-//         header.col(|ui| {
-//             ui.label("Size");
-//         });
-//     })
-//     .body(|mut body| { // todo: loop and display files from current path
-//         body.row(30.0, |mut row| {
-//             row.col(|ui| {
-//                 ui.label("Hello");
-//             });
-//             row.col(|ui| {
-//                 ui.label("Hello");
-//             });
-//             row.col(|ui| {
-//                 ui.label("Hello");
-//             });
-//             row.col(|ui| {
-//                 ui.button("world!");
-//             });
-//         });
-//     });
