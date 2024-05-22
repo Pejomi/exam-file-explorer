@@ -4,7 +4,7 @@
 ## Description
 This is a Rust program that can be used to explore the files and directories on your computer. You can navigate through the directories and see the files and directories in each directory.
 
-![gui](img\gui.png)
+![gui](img/gui.png)
 
 ## Features
 You can do the following things in the program:
@@ -36,7 +36,7 @@ The program uses the GUI library ```egui``` to create and manage the GUI with el
 
 With use of the ```egui_extras``` crate, we also use ```StripBuilder``` to divide the window into different sections:
 
-![layout](img\layout.png)
+![layout](img/layout.png)
 
 
 ## Use of external crates
