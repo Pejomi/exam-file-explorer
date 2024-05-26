@@ -54,7 +54,7 @@ pub fn ui_folders(ui: &mut egui::Ui, _self: &mut App, index: &i32, curr_path: &s
 
                     if button_response.clicked() {
                         if path_obj.is_dir() {
-                            let index_usize = (index.to_owned()+1) as usize;
+                            let index_usize = (index+1) as usize;
                             let pages_count = _self.pages.iter().count();
 
                             // If a parent folder is selected
