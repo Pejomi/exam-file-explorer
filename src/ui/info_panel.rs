@@ -1,6 +1,7 @@
 use egui::ScrollArea;
 use egui_extras::{Size, StripBuilder};
 use crate::app::App;
+use crate::utils::files::{convert_byte_size, system_time_to_date_time};
 
 pub fn build_info_panel(ui: &mut egui::Ui, app: &mut App) {
     if let Some(file_data) = &app.highlighted_file {
@@ -25,25 +26,21 @@ pub fn build_info_panel(ui: &mut egui::Ui, app: &mut App) {
                                             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                                                 ui.label("Size");
                                             });
+
                                             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                                ui.label("File location");
-                                            });
-                                            ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                                ui.label("Date modified");
+                                                ui.label("Created");
                                             });
                                         });
                                         strip.cell(|ui| {
                                             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                                ui.label(file_data.file_type.as_str())
+                                                ui.label(file_data.file_type.to_string());
                                             });
                                             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                                ui.label(file_data.size.to_string());
+                                                ui.label(convert_byte_size(file_data.size));
                                             });
+
                                             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                                ui.label(file_data.path.as_str())
-                                            });
-                                            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                                ui.label("TODO") // TODO replace with date
+                                                ui.label(system_time_to_date_time(file_data.creation_time)); // TODO replace with date
                                             });
                                         });
                                     });
@@ -53,5 +50,4 @@ pub fn build_info_panel(ui: &mut egui::Ui, app: &mut App) {
                 });
             });
     }
-
 }

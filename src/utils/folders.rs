@@ -77,13 +77,14 @@ pub fn ui_folders(ui: &mut egui::Ui, _self: &mut App, index: &i32, curr_path: &s
                                 _self.add_page(item_name);
                             }
                         } else {
+                            // Add metadata to the highlighted file
                             let metadata = fs::metadata(&path_obj).unwrap();
 
                             let file_data = FileData {
                                 path: path_obj.to_str().unwrap().to_owned(),
                                 name: item_name.to_owned(),
                                 size: metadata.len(),
-                                file_type: "txt".to_owned(),
+                                file_type: path_obj.extension().unwrap().to_str().unwrap().to_owned(),
                                 creation_time: metadata.created().unwrap(),
                                 last_access_time: metadata.accessed().unwrap(),
                                 last_modification_time: metadata.modified().unwrap(),
