@@ -61,7 +61,7 @@ pub fn ui_folders(ui: &mut egui::Ui, _self: &mut App, index: &i32, curr_path: &s
                             if index_usize < pages_count {
                                 let mut components: Vec<_> = _self.pages.components().collect();
 
-                                components.truncate(index_usize + 1);
+                                components.truncate(index_usize);
 
                                 // Rebuild the PathBuf from the modified components
                                 let mut modified_path = PathBuf::new();
@@ -69,6 +69,8 @@ pub fn ui_folders(ui: &mut egui::Ui, _self: &mut App, index: &i32, curr_path: &s
                                 for component in components {
                                     modified_path.push(component.as_os_str());
                                 }
+
+                                modified_path.push(item_name);
 
                                 // Replace the existing pages with the modified version
                                 _self.pages = modified_path;
