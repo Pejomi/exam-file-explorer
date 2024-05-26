@@ -58,14 +58,17 @@ pub enum Mode {
     ProHacker
 }
 
-pub fn get_theme(mode: Mode) -> (Theme, String) {
-    match mode {
-        Mode::Light => (LIGHT_THEME, "💡 Light".parse().unwrap()),
-        Mode::Dark => (DARK_THEME, "🌙 Dark".parse().unwrap()),
-        Mode::Ocean => (OCEAN_THEME, "🌊 Ocean".parse().unwrap()),
-        Mode::ProHacker => (PRO_HACKER_THEME, "🔥 Pro Hacker".parse().unwrap())
+impl Mode {
+    pub fn get_theme(&self) -> (Theme, String) {
+        match self {
+            Mode::Light => (LIGHT_THEME, "💡 Light".parse().unwrap()),
+            Mode::Dark => (DARK_THEME, "🌙 Dark".parse().unwrap()),
+            Mode::Ocean => (OCEAN_THEME, "🌊 Ocean".parse().unwrap()),
+            Mode::ProHacker => (PRO_HACKER_THEME, "🔥 Pro Hacker".parse().unwrap())
+        }
     }
 }
+
 
 pub fn set_theme(ctx: &egui::Context, theme: Theme) {
     ctx.set_visuals(theme.visuals(ctx.style().visuals.clone()));

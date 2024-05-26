@@ -6,7 +6,6 @@ use utils::files::*;
 
 use crate::app::App;
 use crate::structs::file_data::FileData;
-use crate::ui::theme::get_theme;
 use crate::utils;
 
 
@@ -30,7 +29,7 @@ pub fn ui_folders(ui: &mut egui::Ui, _self: &mut App, index: &i32, curr_path: &s
                 // Draw separating line
                 let start_point = Pos2::new(rect.max.x, rect.min.y);
                 let end_point = Pos2::new(rect.max.x, rect.max.y);
-                let stroke = Stroke::new(2.0, get_theme(_self.theme_mode.clone()).0.stroke);
+                let stroke = Stroke::new(2.0, _self.theme_mode.get_theme().0.stroke);
                 painter.line_segment([start_point, end_point], stroke);
 
                 let folders = get_folders(curr_path);
@@ -48,7 +47,7 @@ pub fn ui_folders(ui: &mut egui::Ui, _self: &mut App, index: &i32, curr_path: &s
                         item_button = item_button.fill(Color32::TRANSPARENT);
                         item_button = item_button.stroke(Stroke::NONE);
                     } else if _self.pages.to_str().unwrap().contains(path_obj.to_str().unwrap()) {
-                        item_button = item_button.fill(get_theme(_self.theme_mode.clone()).0.tertiary);
+                        item_button = item_button.fill(_self.theme_mode.get_theme().0.tertiary);
                     }
 
                     let button_response = ui.add(item_button);

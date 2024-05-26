@@ -14,7 +14,7 @@ use crate::ui::search_bar::build_search_bar;
 use crate::ui::top_bar_navigation::build_navigation_bar;
 use crate::ui::directory_list::build_directory_list;
 use crate::ui::info_panel::build_info_panel;
-use crate::ui::theme::{get_theme, Mode, set_theme};
+use crate::ui::theme::{Mode, set_theme};
 
 #[derive(Default, Clone)]
 pub(crate) struct App {
@@ -42,7 +42,7 @@ impl App {
             search_result_menu_open: false,
             highlighted_file: None,
             context_menu_open: false,
-            theme_mode: Mode::Light,
+            theme_mode: Mode::default(),
         };
         app.initialize();
         app
@@ -58,7 +58,7 @@ impl App {
 
 impl eframe::App for App {
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
-        set_theme(ctx, get_theme(self.theme_mode.clone()).0);
+        set_theme(ctx, self.theme_mode.get_theme().0);
         egui::CentralPanel::default().show(ctx, |ui| {
             StripBuilder::new(ui)
                 .size(Size::exact(20.0))// top
@@ -112,10 +112,10 @@ impl eframe::App for App {
                             strip.cell(|ui| {
                                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                                     egui::ComboBox::from_label("Theme:")
-                                        .selected_text(get_theme(self.theme_mode.clone()).1)
+                                        .selected_text(self.theme_mode.get_theme().1)
                                         .show_ui(ui, |ui| {
                                             for mode in all::<Mode>().collect::<Vec<_>>() {
-                                                ui.selectable_value(&mut self.theme_mode, mode, get_theme(mode.clone()).1);
+                                                ui.selectable_value(&mut self.theme_mode, mode, mode.get_theme().1);
                                             }
                                         });
                                 });
