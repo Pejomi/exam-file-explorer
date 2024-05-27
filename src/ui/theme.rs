@@ -59,12 +59,12 @@ pub enum Mode {
 }
 
 impl Mode {
-    pub fn get_theme(&self) -> (Theme, String) {
+    pub fn get_theme(&self) -> (Theme, &str) {
         match self {
-            Mode::Light => (LIGHT_THEME, "💡 Light".parse().unwrap()),
-            Mode::Dark => (DARK_THEME, "🌙 Dark".parse().unwrap()),
-            Mode::Ocean => (OCEAN_THEME, "🌊 Ocean".parse().unwrap()),
-            Mode::ProHacker => (PRO_HACKER_THEME, "🔥 Pro Hacker".parse().unwrap())
+            Mode::Light => (LIGHT_THEME, "💡 Light"),
+            Mode::Dark => (DARK_THEME, "🌙 Dark"),
+            Mode::Ocean => (OCEAN_THEME, "🌊 Ocean"),
+            Mode::ProHacker => (PRO_HACKER_THEME, "🔥 Pro Hacker")
         }
     }
 }
